@@ -1,0 +1,185 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:replace="frame">
+    <title th:fragment="titles">Leaf Ant ElasticSearch 同步列表</title>
+    <script th:fragment="scripts">
+
+        let page;
+        let currPage;
+
+        /**
+         * 列表查询
+         * @param pageNo 页号
+         */
+        function search(pageNo) {
+
+            const table = $("#search_table").val();
+            let url = "/elasticsearchMapping/search?pageSize=8";
+            if(pageNo){ url += "&page="+pageNo;}
+            if(table){url += "&sourceTable="+table;}
+
+            $.getJSON(url, function (data) {
+                const table = $(".grid");
+
+                let refresh = false;
+                // 数据加载
+                table.find("tr:gt(0)").remove();
+                $.each(data.result, function (i,row) {
+                    $.each(row.sourceList, function (j, sourceRow) {
+                        refresh = row.init==='initing' || refresh;
+                        var tr = $(`<tr key='${row.mappingId}' refresh=${row.init==='initing'}>`);
+                        // 索引
+                        if(j==0){ tr.append(`<td rowspan='${row.sourceList.length}' title='${row.elasticSearchIndex}'>${row.elasticSearchIndex.substring(0, row.elasticSearchIndex.indexOf("/"))}</td>`);}
+                        // 源库
+                        tr.append(`<td>${sourceRow.sourceDatabase}</td>`);
+                        // 源表
+                        tr.append(`<td>${sourceRow.sourceTables}</td>`);
+                        // 主子表
+                        tr.append(`<td>${sourceRow.master?"主表":"子表"}</td>`);
+                        // 操作
+                        if(j==0){ tr.append(`<td rowspan='${row.sourceList.length}'><a href="javascript:" onclick="init(${row.init==='complete' || row.init==='initing'}, '${row.mappingId}')">${initText(row.init)}</a>&nbsp;&nbsp;<a href="javascript:" onclick="sync(${row.sync}, '${row.mappingId}')">${row.sync?'已同步':'未同步'}</a></td>`)};
+                        table.append(tr);
+                    });
+                });
+
+                if(page){
+                    console.log(page);
+                    page.num.current = pageNo;
+                    page.show();
+                }else {
+                    // 分页
+                    page = new Pagination(
+                        $(".page"),
+                        {
+                            length: data.totalCount, current: data.currPage, every: data.pageSize, mode: 'short',
+                            onClick:function(page, pageNo){
+                                search(pageNo)
+                            }
+                        });
+                }
+                currPage = pageNo;
+
+                // 自动刷新
+                if(refresh){
+                    setTimeout(function () {search(currPage);},500);
+                }
+            })
+        }
+
+        /**
+         * 初始化
+         * @param initialized 是否已初始化
+         * @param id 索引ID
+         */
+        function init(initialized, id){
+            if(!initialized){
+                $.getJSON("/elasticsearchMapping/loadData?mappingId="+id, function (data) {
+                    // if(data.errcode === 0){
+                    //     new Dialog().alert('初始化中！', {title: '提示', type: 'success'});
+                    // }else {
+                    //     new Dialog().alert('初始化失败！', {title: '提示', type: 'warning'});
+                    // }
+                    search(currPage);
+                    setTimeout(function () {search(currPage);},500);
+                    setTimeout(function () {search(currPage);},1000);
+                })
+            }
+        }
+
+        function initText(status) {
+            if(!status || status==='no'){
+                return "初始化";
+            }else if(status === 'initing'){
+                return "初始化中...";
+            }else if(status === 'complete'){
+                return "已初始化";
+            }else if(status === 'fail'){
+                return '初始化失败，重新初始化';
+            }else {
+                return "初始化";
+            }
+        }
+
+        /**
+         * 更新同步状态
+         * @param isSync 同步状态
+         */
+        function sync(isSync, id) {
+            $.getJSON(`/elasticsearchMapping/syncStatus?mappingId=${id}&syncStatus=${!isSync}`, function (data) {
+                search(currPage);
+                setTimeout(function () {search(currPage);},500);
+                setTimeout(function () {search(currPage);},1000);
+            })
+        }
+
+        /**
+         * 新增配置
+         */
+        function addConfig(){
+            location.href = "/page/elasticsearchDataSource"
+        }
+
+        search(1);
+    </script>
+
+    <style th:fragment="styles">
+        .grid th{
+            text-align: center;
+        }
+        .grid td{
+            text-align: center;
+        }
+        .page{
+            float: right;
+            margin-top: 10px;
+        }
+    </style>
+
+    <div th:fragment="content">
+        <section class="pb_section bg-light pb_slant-white pb_pb-250" style="padding-top: 60px" id="section-features">
+            <div class="container">
+                <div class="row" style="height: 80px">
+                    <div class="col-md-10">
+                        <span class="ui-input ui-search-input ui-search-right">
+                            <input id="search_table" type="search" placeholder="源表" style="margin-right: 10px; height: 20px">
+                            <label class="ui-icon-search" onclick="search(1)">搜索</label>
+                        </span>
+                    </div>
+                    <div class="col-md-2" style="text-align: right">
+                        <a href="javascript:" class="ui-button ui-button-success" role="button" onclick="addConfig()">创建同步</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="grid ui-table">
+                            <tr>
+                                <th scope="col">ES索引</th>
+                                <th scope="col">源库</th>
+                                <th scope="col">源表</th>
+                                <th scope="col">主子表</th>
+                                <th scope="col">操作</th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="page"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

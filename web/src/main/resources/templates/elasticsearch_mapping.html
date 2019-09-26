@@ -1,0 +1,491 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:replace="frame">
+    <title th:fragment="titles">ElasticSearch 映射配置</title>
+    <script th:fragment="scripts">
+
+        // 映射结构
+        let mapping;
+        // 表列表
+        let tableList;
+        /**
+         * 加载表映射结构
+         */
+        function loadMapping() {
+            var uuid = getQueryString("uuid");
+            var tables = localStorage.getItem(uuid);
+            // localStorage.removeItem(uuid);
+
+            $.getJSON("/elasticsearchMapping/mapping?tables="+tables, function (data) {
+                // 保存映射结构
+                mapping = data.value;
+                // 加载索引名称
+                loadIndexName(data);
+                // 加载数据表列表
+                loadTableSelect(data);
+                // 加载字段列表
+                loadFieldTable(data);
+            });
+        }
+
+        /**
+         * 保存表映射结构
+         */
+        function saveMapping() {
+            // 读取配置
+            const grid = $(".grid");
+
+            const esAddrInfo = $("#esAddr").val();
+            const indexName = $("#indexName").val();
+
+            let masterTableInfo = {};
+            const masterTableName = $("#masterTable").val();
+
+            $.each(mapping, function (i, tableInfo) {
+                tableInfo.childTable = [];
+                tableInfo.childField = [];
+                $.each(tableInfo.fieldMapping, function (i, fieldInfo) {
+                    const row = grid.find(`tr[key='${tableInfo.dataSourceConfig.table}.${fieldInfo.sourceColumn}']`);
+                    const foreignKey = row.find("td.foreign>.joinField:visible");
+                    fieldInfo.foreignKey = foreignKey.length>0;
+                    if(fieldInfo.foreignKey){
+                        fieldInfo.joinChildColumn = foreignKey.text();
+                        tableInfo.childField.push(foreignKey.text());
+                        reverseJoinMasterColumn(mapping, fieldInfo.joinChildColumn, `${tableInfo.dataSourceConfig.table}.${fieldInfo.sourceColumn}`, `${tableInfo.dataSourceConfig.table}.${fieldInfo.field}`)
+                    }
+                    fieldInfo.field = row.find("td.es_col>input").val();
+                    fieldInfo.sync = row.find("td.sync>input").prop("checked");
+                    fieldInfo.index = row.find("td.index>input").prop("checked");
+                    fieldInfo.analyzer = row.find("td.analyzer>input").prop("checked");
+                });
+            });
+
+            /**
+             * 反向绑定外键字段
+             */
+            function reverseJoinMasterColumn(mapping, joinChildColumn, joinMasterColumn, joinMasterEsField){
+                const table = joinChildColumn.split(".")[0];
+                const field = joinChildColumn.split(".")[1];
+                mapping.filter(tableInfo => tableInfo.dataSourceConfig.table === table).forEach(tableInfo => {
+                    tableInfo.fieldMapping.filter(fieldInfo => fieldInfo.sourceColumn === field).forEach(fieldInfo => {
+                        fieldInfo.joinKey = true;
+                        fieldInfo.joinMasterColumn = joinMasterColumn;
+                        fieldInfo.joinMasterEsField = joinMasterEsField;
+                    });
+                });
+            }
+
+            $.each(mapping, function (i, tableInfo) {
+
+                tableInfo.esAddr = esAddrInfo;
+                tableInfo.index = indexName;
+                tableInfo.type = indexName;
+                tableInfo.mult = mapping.length > 1;
+
+                // 设置主表
+                if(tableInfo.dataSourceConfig.table===masterTableName){
+                    tableInfo.isMaster = true;
+                    masterTableInfo = tableInfo;
+                }else {
+                    tableInfo.isMaster = false;
+                }
+
+                // 添加子表关联
+                tableInfo.childField.forEach(childField => {
+                    tableInfo.childTable.push(mapping.filter(table => table.dataSourceConfig.table === childField.split('.')[0])[0]);
+                });
+            });
+
+
+
+            const config = {
+                index: indexName,
+                type: indexName,
+                esAddr: esAddrInfo,
+                mult: mapping.length > 1,
+                esIndexManager: $("#esIndexManager").prop("checked"),
+                masterTable: masterTableInfo
+            };
+
+            console.log(config);
+            /************************** 配置检查 ******************************/
+
+            let vaild = true;
+
+            if(config.index == null|| $.trim(config.index).length===0){
+                $.lightTip.error('索引名称不允许为空！');
+                vaild = false;
+                return;
+            }
+            if(config.esAddr == null|| $.trim(config.esAddr).length===0){
+                $.lightTip.error('ElasticSearch地址不允许为空！');
+                vaild = false;
+                return;
+            }
+
+            if(tableList.length>1){
+                // 字段表数量
+                const tableCount = sumTableCount(config.masterTable,1);
+
+                if(tableCount !== tableList.length){
+                    if(tableCount < tableList.length){
+                        $.lightTip.error(`多表关系必须通过外键关联，请配置外键！`);
+                    }else {
+                        $.lightTip.error(`禁止多表循环关联，请检查配置！`);
+                    }
+                    vaild = false;
+                    return;
+                }
+
+                function sumTableCount(table, level) {
+                    if(level>10){
+                        $.lightTip.error(`禁止多表循环关联，请检查配置！`);
+                        vaild = false;
+                        return 0;
+                    }
+                    if(table.childTable){
+                        return 1 + table.childTable.length>0 ? table.childTable.map((child) => sumTableCount(child, level+1)).reduce((a,b) => a+b, 1) : 0
+                    }else {
+                        return 1;
+                    }
+                }
+            }
+
+            if(!vaild){ return; }
+
+            // 保存映射
+            $.ajax({
+                method: "POST",
+                url: "/elasticsearchMapping/createIndex",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(config),
+                success: function (data) {
+                    if(data.errcode==0){
+                        new Dialog().alert('保存成功！', {
+                            title: '提示',
+                            type: 'success',
+                            buttons: [
+                                {
+                                    events: function (e) {
+                                        location.href = '/page/elasticsearch';
+                                    }
+                                }
+                            ]
+                        });
+                    }else {
+                        new Dialog().alert('保存失败！', {
+                            title: '提示',
+                            type: 'warning'
+                        });
+                    }
+                },
+                error: function () {
+                    new Dialog().alert('保存失败！', {
+                        title: '提示',
+                        type: 'warning'
+                    });
+                }
+            });
+
+
+
+        }
+
+        /**
+         * 获得参数列表
+         * @param name 参数名称
+         * @returns {string|null}
+         */
+        function getQueryString(name) {
+            const reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            const r = window.location.search.substr(1).match(reg);//search,查询？后面的参数，并匹配正则
+            if(r!=null)return  unescape(r[2]); return null;
+        }
+
+        /**
+         * 数组去重
+         * @param array
+         * @returns {*}
+         */
+        function distinct(array) {
+            return Array.from(new Set(array));
+        }
+
+        /**
+         * 加载索引名称
+         * @param data 映射结构
+         */
+        function loadIndexName(data){
+            if(data.value && data.value.length>0){
+                $("#indexName").val(data.value[0].dataSourceConfig.table);
+            }
+        }
+
+        /**
+         * 加载数据表列表
+         * @param data 映射结构
+         */
+        function loadTableSelect(data) {
+            let localTableList = [];
+            $.each(data.value, function(i,table){
+                localTableList[i] = table.dataSourceConfig.table;
+            });
+            tableList = distinct(localTableList);
+
+            const tableSelect = $("#masterTable");
+            tableSelect.children().remove();
+            $.each(tableList, function (i, tableName) {
+                tableSelect.append(`<option ${(i===0?'checked':'')}>${tableName}</option>`);
+            });
+            tableSelect.selectMatch();
+        }
+
+        /**
+         * 加载字段列表
+         * @param data 映射结构
+         */
+        function loadFieldTable(data) {
+            const grid = $(".grid");
+            grid.find("tr:gt(0)").remove();
+            $.each(data.value, function (table_index, table) {
+                $.each(table.fieldMapping, function (i, field) {
+                    const tr = $("<tr key='" + table.dataSourceConfig.table + "." + field.sourceColumn + "'></tr>");
+                    if(i===0){
+                        tr.append("<td rowspan="+table.fieldMapping.length+" class='table'>"+table.dataSourceConfig.table+"</td>");
+                    }
+                    tr.append(`<td class='mysql_col'>${field.sourceColumn+(field.primaryKey?'（主键）':'')}</td>`);
+                    tr.append(`<td class='foreign'><span class="oi oi-plus" style="cursor: pointer" onclick="joinDialog('${table.dataSourceConfig.table}','${field.sourceColumn}')"></span></td>`);
+                    tr.append(`<td class='es_col'><input class='ui-input' value='${checkField(table.dataSourceConfig.table, field.field)}'/></td>`);
+                    tr.append(`<td class='es_type'>${field.esTypeName}</td>`);
+                    tr.append(`<td class='sync'><input id='checkbox_${table.dataSourceConfig.table+field.sourceColumn+i}' type='checkbox' checked ${field.primaryKey?"disabled":""}/><label for='checkbox_${table.dataSourceConfig.table+field.sourceColumn+i}' class='ui-checkbox'></label></td>`);
+                    tr.append(`<td class='index'><input id='checkbox_${table.dataSourceConfig.table+field.sourceColumn+i}' type='checkbox' checked/><label for='checkbox_${table.dataSourceConfig.table+field.sourceColumn+i}' class='ui-checkbox'></label></td>`);
+                    tr.append(`<td class='analyzer'><input id='checkbox_${table.dataSourceConfig.table+field.sourceColumn+i}' type='checkbox'/><label for='checkbox_${table.dataSourceConfig.table+field.sourceColumn+i}' class='ui-checkbox'></label></td>`);
+                    grid.append(tr);
+                });
+            });
+        }
+
+        let fieldList = [];
+        /**
+         * 检查字段是否重复
+         */
+        function checkField(table, field){
+            const count = fieldList.filter((f) => f === field).length;
+            if(count===0){
+                fieldList.push(field);
+                return field;
+            }else {
+                const newField = table + "_" + field;
+                fieldList.push(newField);
+                return newField;
+            }
+        }
+
+        /**
+         * 绑定主表选择事件
+         */
+        function bindTableSelectCheck() {
+            $("#masterTable").change(function () {
+                var table = $.trim(this.value);
+                $(".foreign").find("input[type=radio]").removeAttr("disabled");
+                $(".foreign").find("input[type=radio][name="+table+"]").removeAttr("checked").attr("disabled", "disabled");
+            })
+        }
+
+        /**
+         * 选择关联外键窗口
+         * @param foreignTable 外键表
+         * @param foreignField 外键字段
+         */
+        function joinDialog(foreignTable, foreignField) {
+
+            if(tableList.length>1){
+                // 加载主表列表
+                loadMasterTableList(foreignTable);
+
+                // 弹出窗口
+                const dialog = $("#dialog");
+                const win = new Dialog({
+                    title: '选择关联外键',
+                    content: dialog.show(),
+                    buttons: [
+                        {
+                            value:'保存',
+                            events: {
+                                click: function () {
+                                    const table = $("#joinMasterTable").val();
+                                    const field = $("#joinMasterField").val();
+                                    const td = $(".grid").find(`tr[key='${foreignTable}.${foreignField}']>td.foreign`);
+                                    td.find(".oi-plus").hide();
+                                    if(td.find(".joinField").length===0){
+                                        td.append(`<div class="joinField" style="cursor: pointer" onclick="delForeign('${foreignTable}.${foreignField}')">${table}.${field}</div>`);
+                                    }else {
+                                        td.find(".joinField").html(`${table}.${field}`);
+                                        td.find(".joinField").show();
+                                    }
+                                    win.hide();
+                                }
+                            }
+                        },
+                        {
+                            value:'取消'
+                        }
+                    ]
+                });
+            }
+        }
+
+        /**
+         * 删除外键
+         * @param key 外键
+         */
+        function delForeign(key){
+            const td = $(".grid").find(`tr[key='${key}']>td.foreign`);
+            td.find(".joinField").hide();
+            td.find(".oi-plus").show();
+        }
+
+        /**
+         * 加载主表列表
+         * @param foreignTable 外键表
+         */
+        function loadMasterTableList(foreignTable) {
+            // 加载主表列表
+            const tableSelect = $("#joinMasterTable");
+            tableSelect.children().remove();
+            const localTableList = tableList.filter(table => table!== foreignTable);
+            $.each(localTableList, function (i, tableName) {
+                tableSelect.append(`<option ${(i===0?'checked':'')}>${tableName}</option>`);
+            });
+            tableSelect.selectMatch();
+
+            tableSelect.unbind("change").change(function () {
+                loadMasterFieldList(tableSelect.val());
+            });
+            // 加载字段列表
+            loadMasterFieldList(localTableList[0]);
+        }
+
+        /**
+         * 加载主表字段列表
+         * @param masterTable 主表
+         */
+        function loadMasterFieldList(masterTable) {
+            const fieldSelect = $("#joinMasterField");
+            fieldSelect.children().remove();
+            $.each(mapping.filter(table => table.dataSourceConfig.table === masterTable)[0].fieldMapping, function(i, field){
+                fieldSelect.append(`<option ${(i===0?'checked':'')}>${field.sourceColumn}</option>`);
+            });
+            fieldSelect.selectMatch();
+        }
+
+        loadMapping();
+        bindTableSelectCheck();
+    </script>
+
+    <style th:fragment="styles">
+        .grid th{
+            text-align: center;
+        }
+        .grid td{
+            text-align: center;
+        }
+        .label {
+            width: 155px;
+        }
+        .form {
+            width: 500px;
+        }
+        .form>div{
+            margin: 10px 0px 10px 0px;
+        }
+        .form input{
+            height: 30px;
+        }
+    </style>
+
+    <div th:fragment="content">
+        <section class="pb_section bg-light pb_slant-white pb_pb-250" style="padding-top: 60px" id="section-features">
+            <div class="container">
+                <div class="row" style="height: 80px">
+                    <div class="col-md-6">
+                        <label class="label">索引名称：</label>
+                        <input id="indexName" class="ui-input" style="height: 40px; width: 300px">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="label">主表：</label>
+                        <select id="masterTable" style="width: 300px">
+                        </select>
+                    </div>
+                </div>
+                <div class="row" style="height: 80px">
+                    <div class="col-md-6">
+                        <label class="label">ElasticSearch地址：</label>
+                        <input id="esAddr" class="ui-input" style="height: 40px; width: 300px" placeholder="IP:端口">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="label">是否管理ElasticSearch：</label>
+                        <input id="esIndexManager" type="checkbox" checked><label class="ui-switch" for="esIndexManager"></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="grid ui-table">
+                            <tr>
+                                <th scope="col" style="width: 150px">MySQL表</th>
+                                <th scope="col" style="width: 150px">MySQL字段</th>
+                                <th scope="col" style="width: 150px">关联外键</th>
+                                <th scope="col" style="width: 180px">ES字段</th>
+                                <th scope="col">ES类型</th>
+                                <th scope="col">是否同步</th>
+                                <th scope="col">是否索引</th>
+                                <th scope="col">是否分词</th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 30px;">
+                    <div class="col-md-11" style="text-align: right">
+                        <a href="/page/elasticsearchDataSource" class="ui-button" role="button" style="margin-right: 15px">上一步</a>
+                        <a href="javascript:" class="ui-button ui-button-success" role="button" onclick="saveMapping()">完成</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="dialog" style="display: none">
+            <div class="container form">
+                <div class="row">
+                    <div class="col-md-auto" style="text-align: right">
+                        关联主表：
+                    </div>
+                    <div class="col-md-auto" style="text-align: left">
+                        <select id="joinMasterTable" style="width: 300px"></select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-auto" style="text-align: right">
+                        关联字段：
+                    </div>
+                    <div class="col-md-auto"  style="text-align: left">
+                        <select id="joinMasterField" style="width: 300px"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

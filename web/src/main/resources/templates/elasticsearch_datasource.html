@@ -1,0 +1,488 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:replace="frame">
+    <title th:fragment="titles">ElasticSearch 数据源选择</title>
+    <script th:fragment="scripts">
+        /**
+         * 加载数据源列表
+         */
+        function loadDatasourceList(){
+            $.getJSON("/datasource/list", function (data) {
+                var list = $(".datasource");
+                list.children().remove();
+                $.each(data.result, function (i, row) {
+                    list.append(`<a href="#" class="list-group-item list-group-item-action" key="${row.id}" onclick="findTables('${row.id}')">${row.rds}.${row.database} <span class="oi oi-circle-x" style="float: right; margin-top: 6px;" onclick="deleteDatasource('${row.id}', '${row.rds}.${row.database}')"></span> <span class="oi oi-cog" style="float: right; margin-top: 6px; margin-right: 6px" onclick="updateDatasourceDialog('${row.id}')"></span></a>`)
+                });
+            });
+        }
+
+        /**
+         * 创建数据源窗口
+         */
+        function createDatasourceDialog() {
+            // 阻止冒泡
+            stopProp();
+
+            var dialog = $('#datasourceCreateDialog');
+            clearDialog(dialog);
+
+            var datasourceCreateDialog = new Dialog({
+                title: '创建数据源',
+                content: dialog.show(),
+                buttons: [
+                    {
+                        value:'保存',
+                        events:{
+                            click:function () {
+                                var config = {
+                                    "rds": dialog.find("input[name=rds]").val(),
+                                    "database": dialog.find("input[name=database]").val(),
+                                    "url": dialog.find("input[name=url]").val(),
+                                    "username": dialog.find("input[name=username]").val(),
+                                    "password": dialog.find("input[name=password]").val(),
+                                };
+                                $.ajax({
+                                    method: "POST",
+                                    url: "/datasource/save",
+                                    dataType: "json",
+                                    contentType: "application/json",
+                                    data: JSON.stringify(config),
+                                    success: function (data) {
+                                        if(data.errcode==0){
+                                            new Dialog().alert('保存成功！', {
+                                                title: '提示',
+                                                type: 'success'
+                                            });
+                                            loadDatasourceList();
+                                            datasourceCreateDialog.hide();
+                                        }else {
+                                            new Dialog().alert('保存失败！', {
+                                                title: '提示',
+                                                type: 'warning'
+                                            });
+                                        }
+                                    },
+                                    error: function () {
+                                        new Dialog().alert('保存失败！', {
+                                            title: '提示',
+                                            type: 'warning'
+                                        });
+                                    }
+                                });
+
+                            }
+                        }
+                    },
+                    {
+                        value:'取消'
+                    }
+                ]
+            });
+        }
+
+        /**
+         * 修改数据源窗口
+         */
+        function updateDatasourceDialog(id) {
+            // 阻止冒泡
+            stopProp();
+
+            var dialog = $("#datasourceCreateDialog");
+            $.ajax({
+                method: "GET",
+                async: false,
+                url: "/datasource/get?id="+id,
+                success: function (data) {
+                    if(data.errcode===0){
+                        dialog.attr("key", data.value.id);
+                        dialog.find("input[name=rds]").val(data.value.rds);
+                        dialog.find("input[name=database]").val(data.value.database);
+                        dialog.find("input[name=url]").val(data.value.url);
+                        dialog.find("input[name=username]").val(data.value.username);
+                        dialog.find("input[name=password]").val(data.value.password);
+                    }else {
+                        new Dialog().alert('查询失败！', {
+                            title: '提示',
+                            type: 'warning'
+                        });
+                    }
+                },
+                error: function () {
+                    new Dialog().alert('查询失败！', {
+                        title: '提示',
+                        type: 'warning'
+                    });
+                }
+            });
+
+            const datasourceCreateDialog = new Dialog({
+                title: '修改数据源',
+                content: dialog.show(),
+                buttons: [
+                    {
+                        value: '保存',
+                        events: {
+                            click: function () {
+                                var config = {
+                                    "id": dialog.attr("key"),
+                                    "rds": dialog.find("input[name=rds]").val(),
+                                    "database": dialog.find("input[name=database]").val(),
+                                    "url": dialog.find("input[name=url]").val(),
+                                    "username": dialog.find("input[name=username]").val(),
+                                    "password": dialog.find("input[name=password]").val(),
+                                };
+                                $.ajax({
+                                    method: "POST",
+                                    url: "/datasource/save",
+                                    dataType: "json",
+                                    contentType: "application/json",
+                                    data: JSON.stringify(config),
+                                    success: function (data) {
+                                        if (data.errcode === 0) {
+                                            new Dialog().alert('保存成功！', {
+                                                title: '提示',
+                                                type: 'success'
+                                            });
+                                            loadDatasourceList();
+                                            datasourceCreateDialog.hide();
+                                        } else {
+                                            new Dialog().alert('保存失败！', {
+                                                title: '提示',
+                                                type: 'warning'
+                                            });
+                                        }
+                                    },
+                                    error: function () {
+                                        new Dialog().alert('保存失败！', {
+                                            title: '提示',
+                                            type: 'warning'
+                                        });
+                                    }
+                                });
+
+                            }
+                        }
+                    },
+                    {
+                        value: '取消'
+                    }
+                ]
+            });
+        }
+
+        /**
+         * 删除数据源
+         * @param id 数据源ID
+         * @param name 数据源名称
+         */
+        function deleteDatasource(id, name) {
+            // 阻止冒泡
+            stopProp();
+
+            new Dialog().confirm(
+                '确认要删除数据源：'+name+'?',
+                {
+                    buttons: [
+                        {
+                            events: function(event) {
+                                $.ajax({
+                                    method: "GET",
+                                    url: "/datasource/delete?id="+id,
+                                    success: function (data) {
+                                        event.data.dialog.remove();
+                                        if(data.errcode===0){
+                                            // new Dialog().alert('删除成功！', {
+                                            //     type: 'success'
+                                            // });
+                                            loadDatasourceList();
+                                        }else {
+                                            new Dialog().alert('删除失败！', {
+                                                title: '提示',
+                                                type: 'warning'
+                                            });
+                                        }
+                                    },
+                                    error: function () {
+                                        new Dialog().alert('删除失败！', {
+                                            title: '提示',
+                                            type: 'warning'
+                                        });
+                                    }
+                                });
+
+                            }
+                        },
+                        {}
+                    ]
+                });
+        }
+
+        /**
+         * 清空窗口值
+         */
+        function clearDialog(dialog) {
+            dialog.find("input[name=rds]").val('');
+            dialog.find("input[name=database]").val('');
+            dialog.find("input[name=url]").val('');
+            dialog.find("input[name=username]").val('');
+            dialog.find("input[name=password]").val('');
+        }
+
+        /**
+         * 加载数据库所有表
+         */
+        function findTables(id) {
+            // 阻止冒泡
+            stopProp();
+
+            // 切换选中
+            toggleCheck($(".datasource").children(), id);
+
+            // 加载表列表
+            $.ajax({
+                method: "GET",
+                async: false,
+                url: "/datasource/tables?id="+id,
+                success: function (data) {
+                    if(data.errcode===0){
+                        var list = $(".tables");
+                        list.children().remove();
+                        $.each(data.value, function (i, row) {
+                            list.append(`<a href="#" class="list-group-item list-group-item-action" datasource="${id}" key="${row}" onclick="checkTable('${id}','${row}')">${row}</a>`)
+                        });
+                    }else {
+                        new Dialog().alert('查询失败！', {
+                            title: '提示',
+                            type: 'warning'
+                        });
+                    }
+                },
+                error: function () {
+                    new Dialog().alert('查询失败！', {
+                        title: '提示',
+                        type: 'warning'
+                    });
+                }
+            });
+        }
+
+        /**
+         * 选中表
+         */
+        function checkTable(datasource, table){
+            const list = $(".tables").children();
+            if(!list.filter("[key="+table+"]").hasClass("list-group-item-warning")){
+                $(".checked").append(`<a href="#" class="list-group-item list-group-item-action" datasource="${datasource}" key="${table}" onclick="uncheckTable('${table}')">${table}</a>`);
+            }
+            check(list, table);
+        }
+
+        /**
+         * 下一步
+         */
+        function next() {
+
+            let array = [];
+            $.each($(".checked").children(), function (i, data) {
+                array[i] = $(data).attr("datasource") + "." + $(data).attr("key");
+            });
+
+            if(array.length===0){
+                new Dialog().alert('请选择数据表！', {
+                    title: '提示',
+                    type: 'warning'
+                });
+                return;
+            }
+
+            const uid = uuid();
+            localStorage.setItem(uid, array);
+
+            location.href = "/page/elasticsearchMapping?uuid="+uid;
+        }
+
+        /**
+         * 取消选中表
+         */
+        function uncheckTable(table){
+            uncheck($(".tables").children(), table);
+            $(".checked").find("a[key="+table+"]").remove();
+        }
+
+        /**
+         * 切换选中
+         */
+        function toggleCheck(list, id){
+            list.removeClass("list-group-item-warning");
+            list.filter("[key="+id+"]").addClass("list-group-item-warning");
+        }
+
+        /**
+         * 选中
+         */
+        function check(list, id){
+            list.filter("[key="+id+"]").addClass("list-group-item-warning");
+        }
+
+        /**
+         * 取消选中
+         */
+        function uncheck(list, id){
+            list.filter("[key="+id+"]").removeClass("list-group-item-warning");
+        }
+
+        /**
+         * 阻止冒泡
+         */
+        function stopProp() {
+            var e = window.event || arguments.callee.caller.arguments[0];
+            e.stopPropagation();
+        }
+
+        /**
+         * 生成uuid
+         * @returns {string}
+         */
+        function uuid() {
+            function S4() {
+                return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+            }
+            var uid = (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+
+            if(localStorage.getItem(uid)){
+                return uuid();
+            }else {
+                return uid;
+            }
+        }
+
+        loadDatasourceList();
+
+    </script>
+
+    <style th:fragment="styles">
+        .list{
+            height: 320px;
+            background: white;
+            border-radius: 7px;
+            overflow: scroll;
+        }
+        .right{
+            height: 371px;
+        }
+        .right span{
+            top: 180px;
+        }
+
+        .form {
+            width: 500px;
+        }
+        .form>div{
+            margin: 10px 0px 10px 0px;
+        }
+        .form input{
+            height: 30px;
+        }
+    </style>
+
+    <div th:fragment="content">
+        <section class="pb_section bg-light pb_slant-white pb_pb-250" style="padding-top: 60px" id="section-features">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-action active">可选择数据库 <span class="oi oi-plus" style="float: right; margin-top: 6px;" onclick="createDatasourceDialog()"></span></a>
+                            <div class="list datasource">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-auto right">
+                        <span class="oi oi-chevron-right"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-action active">可选择数据表</a>
+                            <div class="list tables">
+                                <a href="#" class="list-group-item list-group-item-action">请选择数据库</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-auto right">
+                        <span class="oi oi-chevron-right"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-action active">已选择数据表</a>
+                            <div class="list checked">
+<!--                                <a href="#" class="list-group-item list-group-item-action" title="dev_rds.kaishustory_storys.ks_express_addr">请选择同步数据表</a>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 30px;">
+                    <div class="col-md-11" style="text-align: right">
+                        <a href="/page/elasticsearch" class="ui-button" role="button" style="margin-right: 15px">取消</a>
+                        <a href="javascript:" class="ui-button ui-button-success" role="button" onclick="next()">下一步</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="datasourceCreateDialog" style="display: none" key="">
+            <div class="container form">
+                <div class="row">
+                    <div class="col-md-4" style="text-align: right">
+                        RDS名称：
+                    </div>
+                    <div class="col-md-8" style="text-align: left">
+                        <input class="ui-input" name="rds" placeholder="实例名称">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4" style="text-align: right">
+                        数据库名称：
+                    </div>
+                    <div class="col-md-8"  style="text-align: left">
+                        <input class="ui-input" name="database" placeholder="数据库">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4" style="text-align: right">
+                        数据库地址：
+                    </div>
+                    <div class="col-md-8" style="text-align: left">
+                        <input class="ui-input" name="url" placeholder="IP:端口">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4" style="text-align: right">
+                        数据库用户：
+                    </div>
+                    <div class="col-md-8" style="text-align: left">
+                        <input class="ui-input" name="username" placeholder="用户">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4" style="text-align: right">
+                        数据库密码：
+                    </div>
+                    <div class="col-md-8" style="text-align: left">
+                        <input class="ui-input" name="password" placeholder="密码">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</body>
+</html>

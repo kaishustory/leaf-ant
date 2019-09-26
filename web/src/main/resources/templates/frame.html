@@ -1,0 +1,119 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title th:include="::titles">Leaf Ant</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+
+    <link href="https://fonts.googleapis.com/css?family=Crimson+Text:400,400i,600|Montserrat:200,300,400" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/css/bootstrap/bootstrap.css">
+    <link rel="stylesheet" href="/static/fonts/ionicons/css/ionicons.min.css">
+
+    <link rel="stylesheet" href="/static/fonts/fontawesome/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="/static/css/slick.css">
+    <link rel="stylesheet" href="/static/css/slick-theme.css">
+
+    <link rel="stylesheet" href="/static/css/helpers.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/landing-2.css">
+    <link rel="stylesheet" href="/static/css/common/ui.css">
+
+    <link rel="stylesheet" href="/static/css/common/open-iconic-bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/common/Select.css">
+    <link rel="stylesheet" href="//qidian.gtimg.com/lulu/theme/peak/css/common/ui/Radio.css">
+    <link rel="stylesheet" href="//qidian.gtimg.com/lulu/theme/peak/css/common/ui/Checkbox.css">
+    <link rel="stylesheet" href="//qidian.gtimg.com/lulu/theme/peak/css/common/ui/Switch.css">
+    <link rel="stylesheet" href="/static/css/common/LightTip.css">
+
+    <style th:include="::styles"></style>
+
+</head>
+<body data-spy="scroll" data-target="#pb-navbar" data-offset="200">
+
+<nav class="navbar navbar-expand-lg navbar-dark pb_scrolled-light pb_cover_v3 cover-bg-indigo cover-bg-opacity text-left pb_gradient_v1" style="height: 100px" id="pb-navbar" >
+    <div class="container">
+        <a class="navbar-brand" href="#" style="font-size: 25px;">Leaf Ant</a>
+        <div class="collapse navbar-collapse" id="probootstrap-navbar">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="/page/elasticsearch">ElasticSearch同步</a></li>
+                <li class="nav-item"><a class="nav-link" href="#section-reviews">Redis同步</a></li>
+                <li class="nav-item"><a class="nav-link" href="#section-reviews">MySQL同步</a></li>
+                <li class="nav-item"><a class="nav-link" href="#section-pricing">MQ同步</a></li>
+                <li class="nav-item"><a class="nav-link" href="#section-faq">FAQ</a></li>
+                <li class="nav-item cta-btn ml-xl-2 ml-lg-2 ml-md-0 ml-sm-0 ml-0" style="cursor: pointer;"><a class="nav-link" target="_blank" onclick="logout()"><span class="pb_rounded-4 px-4">退出</span></a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div th:include="::content"></div>
+
+<footer class="pb_footer bg-light" role="contentinfo">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col">
+                <ul class="list-inline">
+                    <li class="list-inline-item"><a href="#" class="p-2"><i class="fa fa-facebook"></i></a></li>
+                    <li class="list-inline-item"><a href="#" class="p-2"><i class="fa fa-twitter"></i></a></li>
+                    <li class="list-inline-item"><a href="#" class="p-2"><i class="fa fa-linkedin"></i></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- loader -->
+<div id="pb_loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#1d82ff"/></svg></div>
+
+
+
+<script src="/static/js/jquery.min.js"></script>
+
+<script src="/static/js/popper.min.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/js/slick.min.js"></script>
+<script src="/static/js/jquery.mb.YTPlayer.min.js"></script>
+
+<script src="/static/js/jquery.waypoints.min.js"></script>
+<script src="/static/js/jquery.easing.1.3.js"></script>
+
+<script src="/static/js/main.js"></script>
+<script src="/static/js/common/all.js"></script>
+<script src="/static/js/common/Select.js"></script>
+
+<script language="JavaScript">
+    /**
+     * 登出
+     */
+    function logout() {
+        $.getJSON("/logout", function (data) {
+            if(data.errcode == 200){
+                location.href = "/page/login";
+            }
+        })
+    }
+
+    // Select 初始化
+    $('select').selectMatch();
+
+</script>
+<script th:include="::scripts"></script>
+</body>
+</html>
