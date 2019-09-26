@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.kaishustory</groupId>
+    <artifactId>leaf-ant</artifactId>
+    <packaging>pom</packaging>
+    <version>0.9.0-SNAPSHOT</version>
+    <modules>
+        <module>common</module>
+        <module>mapping</module>
+        <module>subscribe</module>
+        <module>transform</module>
+        <module>web</module>
+        <module>message</module>
+    </modules>
+
+    <properties>
+        <spring.version>2.0.3.RELEASE</spring.version>
+        <logback.version>1.1.7</logback.version>
+        <slf4j.version>1.7.21</slf4j.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 通用模块 -->
+            <dependency>
+                <groupId>com.kaishustory</groupId>
+                <artifactId>leafant-common</artifactId>
+                <version>0.9.0-SNAPSHOT</version>
+            </dependency>
+
+            <!-- 通知组件 -->
+            <dependency>
+                <groupId>com.kaishustory</groupId>
+                <artifactId>leafant-message</artifactId>
+                <version>0.9.0-SNAPSHOT</version>
+            </dependency>
+
+            <!-- 映射配置模块 -->
+            <dependency>
+                <groupId>com.kaishustory</groupId>
+                <artifactId>leafant-mapping</artifactId>
+                <version>0.9.0-SNAPSHOT</version>
+            </dependency>
+
+            <!-- Spring Web -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-web</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <!-- Spring Redis -->
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-redis</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>2.9.1</version>
+            </dependency>
+
+            <!-- Spring MongoDB -->
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-mongodb</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <!-- 日志 logback + slf4j -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
+            <!-- Aliyun MQ -->
+            <dependency>
+                <groupId>com.aliyun.openservices</groupId>
+                <artifactId>ons-client</artifactId>
+                <version>1.8.0.Final</version>
+            </dependency>
+
+            <!-- 本地缓存 Caffeine -->
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>2.7.0</version>
+            </dependency>
+
+            <!-- JDBC -->
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>8.0.16</version>
+            </dependency>
+
+            <!-- 连接池 HikariCP -->
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>3.3.1</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.2</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>kaishustory-nexus</id>
+            <name>User Project Release</name>
+            <url>http://nexus.devops.kaishustory.com/repository/releases/</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>kaishustory-nexus</id>
+            <name>User Project SNAPSHOTS</name>
+            <url>http://nexus.devops.kaishustory.com/repository/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+</project>
