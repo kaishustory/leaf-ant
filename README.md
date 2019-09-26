@@ -29,7 +29,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/liguoyangik"><img src="https://avatars3.githubusercontent.com/u/55503412?v=4" width="100px;" alt="李国洋"/><br /><sub><b>李国洋</b></sub></a><br /><a href="#design-liguoyangik" title="Design">🎨</a></td>
+    <td align="center"><a href="https://github.com/liguoyangik"><img src="https://avatars3.githubusercontent.com/u/55503412?v=4" width="100px;" alt="李国洋"/><br /><sub><b>李国洋</b></sub></a><br /><a href="#design-liguoyangik" title="Design">🎨</a> <a href="https://github.com/kaishustory/leaf-ant/commits?author=liguoyangik" title="Code">💻</a></td>
   </tr>
 </table>
 
