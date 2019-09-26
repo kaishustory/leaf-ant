@@ -1,5 +1,4 @@
 # Leaf Ant
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
 Leaf Ant基于Canal实现，将MySQL数据同步至其他数据源（ElasticSearch、Redis、MQ、MySQL）
 # 功能
 ### ElasticSearch同步
@@ -34,5 +33,3 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 </table>
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
