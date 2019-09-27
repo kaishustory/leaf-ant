@@ -56,11 +56,11 @@ public class AuthFilter implements Filter {
                 || request.getRequestURI().equals("/login")
                 // 静态资源
                 || request.getRequestURI().startsWith("/static")
-                // 测试请求
-                || request.getRequestURI().startsWith("/elasticsearchMapping")
-                || request.getRequestURI().startsWith("/redisMapping")
-                || request.getRequestURI().startsWith("/mqMapping")
-                || request.getRequestURI().startsWith("/mysqlMapping")
+//                // 测试请求
+//                || request.getRequestURI().startsWith("/elasticsearchMapping")
+//                || request.getRequestURI().startsWith("/redisMapping")
+//                || request.getRequestURI().startsWith("/mqMapping")
+//                || request.getRequestURI().startsWith("/mysqlMapping")
             ){
                 // 允许访问
                 filterChain.doFilter(request, response);

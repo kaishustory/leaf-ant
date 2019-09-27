@@ -40,6 +40,22 @@ public class LoginController {
     private UserService userService;
 
     /**
+     * 账号注册
+     * @param user 用户名
+     * @param password 密码
+     * @return
+     */
+    @GetMapping("/addUser")
+    public Result addUser(String user, String password){
+        try {
+            userService.addUser(user, password);
+            return new Result(200, "注册成功");
+        }catch (Exception e){
+            return new Result(500, "注册失败！");
+        }
+    }
+
+    /**
      * 用户登录
      * @param user 用户名
      * @param password 密码

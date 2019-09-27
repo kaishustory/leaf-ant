@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.annotation.PostConstruct;
+
 /**
  * 用户管理
  *
@@ -49,5 +51,17 @@ public class UserService {
      */
     public void addUser(String user, String password){
         userDao.addUser(user, DigestUtils.md5DigestAsHex(password.getBytes()));
+    }
+
+    /**
+     * 初始化访客账号
+     */
+    @PostConstruct
+    public void addGuest(){
+        String user = "guest";
+        String password = "guest";
+        if(!login(user, password)) {
+            addUser(user, password);
+        }
     }
 }
