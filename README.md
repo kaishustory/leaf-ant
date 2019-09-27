@@ -19,7 +19,8 @@ Leaf Ant基于Canal实现，将MySQL数据同步至其他数据源（ElasticSear
 4. 启动项目（最简单，不建议生产环境使用）：java -jar leafant-subscribe-0.9.0-SNAPSHOT.jar
 5. 依次启动三个项目 leafant-subscribe、leafant-transform、leafant-web
 6. 访问数据源配置页面 http://127.0.0.1:8080
-
+# 架构图
+![avatar](https://raw.githubusercontent.com/kaishustory/leaf-ant/master/.material/数据同步方案-数据同步流程.png)
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
