@@ -12,11 +12,15 @@
 
 package com.kaishustory.leafant.transform.mq.service;
 
-import com.aliyun.openservices.ons.api.*;
 import com.kaishustory.leafant.common.model.Event;
 import com.kaishustory.leafant.common.model.MqSyncConfig;
 import com.kaishustory.leafant.common.utils.JsonUtils;
 import com.kaishustory.leafant.common.utils.Log;
+import lombok.SneakyThrows;
+import org.apache.rocketmq.client.producer.MQProducer;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.common.message.Message;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +42,7 @@ public class MqTransformService {
      * 转发MQ
      */
     @Resource(name = "forwardTopic")
-    private Producer producer;
+    private MQProducer producer;
 
     /**
      * 应用
@@ -56,6 +60,7 @@ public class MqTransformService {
      * MQ事件转发处理
      * @param events MQ事件列表
      */
+    @SneakyThrows
     public void eventHandle(MqSyncConfig config, List<Event> events){
 
         if(events!=null && events.size()>0) {
@@ -63,18 +68,22 @@ public class MqTransformService {
             Event e = events.get(0);
             // 立即处理
             Message msg = new Message(config.getTargetTopic(), String.format("%s:%s", e.getDatabase(), e.getTable()), e.getTableKey(), JsonUtils.toJson(events).getBytes());
-            msg.setShardingKey(e.getTableKey());
-            producer.sendAsync(msg, new SendCallback() {
-                @Override
-                public void onSuccess(SendResult sendResult) {
-                    Log.info("【MQ】事件转发成功 topic：{}，table：{}，MQID：{}", config.getTargetTopic(), e.getTableKey(), msg.getMsgID());
-                }
+            producer.send(msg,
+                    // Hash分片值【实例_数据库_表名】
+                    (mqs, msg1, key) -> mqs.get(Math.abs(Objects.hash(key)) % mqs.size()),
+                    e.getTableKey(),
+                    new SendCallback() {
+                        @Override
+                        public void onSuccess(SendResult sendResult) {
+                            Log.info("【MQ】事件转发成功 topic：{}，table：{}，MQID：{}", config.getTargetTopic(), e.getTableKey(), msg.getTransactionId());
+                        }
 
-                @Override
-                public void onException(OnExceptionContext context) {
-                    Log.error("【MQ】事件转发失败 topic：{}，table：{}，MQID：{}", config.getTargetTopic(), e.getTableKey(), msg.getMsgID());
-                }
-            });
+                        @Override
+                        public void onException(Throwable context) {
+                            Log.error("【MQ】事件转发失败 topic：{}，table：{}，MQID：{}", config.getTargetTopic(), e.getTableKey(), msg.getTransactionId());
+                        }
+                    }
+            );
             // 逐条打印日志
             events.forEach(event -> {
                 if(TYPE_INSERT == event.getType()){

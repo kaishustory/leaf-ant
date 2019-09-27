@@ -10,9 +10,8 @@
  *
  */
 
-package com.kaishustory.leafant.subscribe.common.config;
+package com.kaishustory.leafant.transform.common.conf;
 
-import com.google.common.base.Strings;
 import com.kaishustory.leafant.common.utils.Log;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -23,20 +22,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
- * 初始化MQ生产者配置
+ * MQ生产者配置
  *
  * @author liguoyang
  * @create 2019-07-10 17:12
  **/
 @Configuration
-public class MQLoadProducer {
+public class RocketMQProducer {
 
     /**
      * 创建MQ生产者
      */
     @Primary
-    @Bean("loadMQ")
-    public MQProducer createProducer(@Value("${mq.load.groupId}") String group, @Value("${mq.addr}") String addr){
+    @Bean("forwardTopic")
+    public MQProducer createProducer(@Value("${mq.sync.groupId}") String group, @Value("${mq.addr}") String addr){
         try {
             DefaultMQProducer producer = new DefaultMQProducer(group);
             producer.setNamesrvAddr(addr);

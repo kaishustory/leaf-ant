@@ -22,7 +22,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>leafant-mapping</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <!-- 通用模块 -->
@@ -53,7 +54,6 @@
         <dependency>
             <groupId>com.kaishustory</groupId>
             <artifactId>leafant-message</artifactId>
-            <version>0.9.0-SNAPSHOT</version>
         </dependency>
 
     </dependencies>

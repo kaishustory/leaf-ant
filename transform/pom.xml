@@ -22,6 +22,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>leafant-transform</artifactId>
+    <version>0.9.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <!-- Spring Web -->
@@ -42,10 +44,10 @@
             <artifactId>leafant-mapping</artifactId>
         </dependency>
 
-        <!-- Aliyun MQ -->
+        <!-- Rocket MQ -->
         <dependency>
-            <groupId>com.aliyun.openservices</groupId>
-            <artifactId>ons-client</artifactId>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-client</artifactId>
         </dependency>
 
         <!-- 本地缓存 Caffeine -->

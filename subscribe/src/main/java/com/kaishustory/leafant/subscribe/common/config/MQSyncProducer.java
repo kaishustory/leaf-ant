@@ -12,15 +12,14 @@
 
 package com.kaishustory.leafant.subscribe.common.config;
 
-import com.aliyun.openservices.ons.api.ONSFactory;
-import com.aliyun.openservices.ons.api.Producer;
-import com.aliyun.openservices.ons.api.PropertyKeyConst;
+import com.kaishustory.leafant.common.utils.Log;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.MQProducer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-
-import java.util.Properties;
 
 /**
  * 同步MQ生产者配置
@@ -31,27 +30,25 @@ import java.util.Properties;
 @Configuration
 public class MQSyncProducer {
 
+    private final String app = "leafant";
+
+    @Value("${spring.profiles.active}")
+    private String env;
+
     /**
      * 创建MQ生产者
      */
     @Primary
     @Bean("syncMQ")
-    public Producer createProducer(@Value("${mq.sync.groupId}") String groupId, @Value("${ons.access-key}") String accessKey, @Value("${ons.secret-key}") String secretKey, @Value("${mq.addr}") String addr){
-        // producer 实例配置初始化
-        Properties properties = new Properties();
-        //您在控制台创建的 Group ID
-        properties.put(PropertyKeyConst.GROUP_ID, groupId);
-        // AccessKey 阿里云身份验证，在阿里云服务器管理控制台创建
-        properties.put(PropertyKeyConst.AccessKey, accessKey);
-        // SecretKey 阿里云身份验证，在阿里云服务器管理控制台创建
-        properties.put(PropertyKeyConst.SecretKey, secretKey);
-        //设置发送超时时间，单位毫秒
-        properties.setProperty(PropertyKeyConst.SendMsgTimeoutMillis, "3000");
-        // 设置 TCP 接入域名，进入控制台的实例管理页面的“获取接入点信息”区域查看
-        properties.put(PropertyKeyConst.NAMESRV_ADDR, addr);
-        final Producer producer = ONSFactory.createProducer(properties);
-        // 在发送消息前，必须调用 start 方法来启动 Producer，只需调用一次即可
-        producer.start();
-        return producer;
+    public MQProducer createProducer(@Value("${mq.sync.groupId}") String group, @Value("${mq.addr}") String addr){
+        try {
+            DefaultMQProducer producer = new DefaultMQProducer(group);
+            producer.setNamesrvAddr(addr);
+            producer.start();
+            return producer;
+        } catch (MQClientException e) {
+            Log.info("创建同步MQ失败！", e);
+            return null;
+        }
     }
 }

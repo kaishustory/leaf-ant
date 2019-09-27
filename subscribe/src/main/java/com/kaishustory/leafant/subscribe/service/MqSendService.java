@@ -12,16 +12,18 @@
 
 package com.kaishustory.leafant.subscribe.service;
 
-import com.aliyun.openservices.ons.api.Producer;
 import com.kaishustory.leafant.common.model.Event;
 import com.kaishustory.leafant.common.utils.JsonUtils;
 import com.kaishustory.leafant.common.utils.Log;
+import org.apache.rocketmq.client.producer.MQProducer;
+import org.apache.rocketmq.common.message.Message;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.kaishustory.leafant.common.constants.MappingConstants.SOURCE_INIT;
@@ -39,7 +41,7 @@ public class MqSendService {
      * 同步MQ生产者
      */
     @Resource(name = "syncMQ")
-    private Producer syncProducer;
+    private MQProducer syncProducer;
 
     /**
      * 同步MQ Topic
@@ -51,7 +53,7 @@ public class MqSendService {
      * 初始化MQ生产者
      */
     @Resource(name = "loadMQ")
-    private Producer loadProducer;
+    private MQProducer loadProducer;
 
     /**
      * 初始化MQ Topic
@@ -88,18 +90,23 @@ public class MqSendService {
                 Event firstEvent = eventList.get(0);
 
                 // MQ消息
-                com.aliyun.openservices.ons.api.Message msg = new com.aliyun.openservices.ons.api.Message(
+                Message msg = new Message(
                         getTopic(simple.getSource()), // MQ Topic
                         firstEvent.getDatabase() + ":" + firstEvent.getTable(), // Tag 【数据库_表名】
                         firstEvent.getTableKey(),
                         JsonUtils.toJson(eventList).getBytes() // Body 事件JSON
                 );
-                // Hash分片值【实例_数据库_表名】
-                msg.setShardingKey(simple.getTableKey());
+
                 // 发送消息
-                getProducer(simple.getSource()).sendOneway(msg);
+                getProducer(simple.getSource()).sendOneway(msg,
+                    // Hash分片值【实例_数据库_表名】
+                    (mqs, msg1, key) -> {
+                        return mqs.get(Math.abs(Objects.hash(key)) % mqs.size());
+                    },
+                    simple.getTableKey());
+
 //              eventList.forEach(event -> Log.info("MQID：{}，Table：{}，Event：{}，Updated：{}", msg.getMsgID(), event.getTableKey(), event.getTypeName(), event.getUpdateColumnsBase()));
-                mqid.add(msg.getMsgID());
+                mqid.add(msg.getProperty("UNIQ_KEY"));
                 Log.info("MQ发送成功. Msg：{}", msg);
 
             } catch (Exception e) {
@@ -118,7 +125,7 @@ public class MqSendService {
      * @param source 事件来源
      * @return 发送者
      */
-    private Producer getProducer(String source){
+    private MQProducer getProducer(String source){
         return SOURCE_INIT.equals(source) ? loadProducer : syncProducer;
     }
 
