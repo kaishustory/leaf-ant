@@ -21,6 +21,25 @@ Leaf Ant基于Canal实现，将MySQL数据同步至其他数据源（ElasticSear
 6. 访问数据源配置页面 http://127.0.0.1:8080
 # 架构图
 ![avatar](https://raw.githubusercontent.com/kaishustory/leaf-ant/master/.material/数据同步方案-数据同步流程.png)
+# ElasticSearch同步配置
+1. 登录系统（访客账号：guest，密码：guest）
+![avatar](https://raw.githubusercontent.com/kaishustory/leaf-ant/master/.material/1.%20登录页面.png)
+
+2. ElasticSearch同步配置列表
+![avatar](https://raw.githubusercontent.com/kaishustory/leaf-ant/master/.material/2.%20ElasticSearch配置列表.png)
+
+3. 创建同步配置【第一步：选择MySQL表】
+![avatar](https://raw.githubusercontent.com/kaishustory/leaf-ant/master/.material/3.%20选择MySQL数据表.png)
+
+4. 创建同步配置【第二步：配置ElasticSearch结构和地址】
+![avatar](https://raw.githubusercontent.com/kaishustory/leaf-ant/master/.material/4.%20配置ElasticSearch结构.png)
+
+5. 同步历史数据
+6. 开启数据实时同步
+![avatar](https://raw.githubusercontent.com/kaishustory/leaf-ant/master/.material/5.%20依次初始化和开启同步.png)
+
+
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
