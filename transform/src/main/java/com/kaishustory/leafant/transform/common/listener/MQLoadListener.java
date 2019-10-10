@@ -89,7 +89,7 @@ public class MQLoadListener {
                                 // 更新初始化成功
                                 loadRecordDao.updateRecordSuccessByMqid(mqid);
                             }catch (Exception e){
-                                Log.error("MQ消息处理异常，将任务转为单条处理模式！{}", mqid, e);
+                                Log.error(String.format("MQ消息处理异常，将任务转为单条处理模式！%s", mqid), e);
 
                                 // 更新初始化失败
                                 loadRecordDao.updateRecordFailByMqid(mqid, e.getMessage());
@@ -101,7 +101,7 @@ public class MQLoadListener {
                                         eventRouteService.route(event);
                                     }catch (Exception e1){
                                         errcount.getAndIncrement();
-                                        Log.error("MQ消息处理异常！{}，table：{}，type：{}，id：{}", mqid, event.getTableKey(), event.getTypeName(), event.getPrimaryKey(), e1);
+                                        Log.error(String.format("MQ消息处理异常！%s，table：%s，type：%s，id：%s", mqid, event.getTableKey(), event.getTypeName(), event.getPrimaryKey()), e1);
                                     }
                                 });
                                 if(errcount.intValue() == 0){
@@ -114,7 +114,7 @@ public class MQLoadListener {
                         }catch (Exception t){
                             // 更新初始化失败
                             loadRecordDao.updateRecordFailByMqid(mqid, t.getMessage());
-                            Log.error("初始化MQ消息处理异常！{}", mqid, t);
+                            Log.error(String.format("初始化MQ消息处理异常！%s", mqid), t);
                         }
                     });
                     return ConsumeOrderlyStatus.SUCCESS;

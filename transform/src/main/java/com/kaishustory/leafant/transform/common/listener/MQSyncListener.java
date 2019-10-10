@@ -78,12 +78,12 @@ public class MQSyncListener {
                             try {
                                 eventRouteService.route(events);
                             }catch (Exception e){
-                                Log.error("MQ消息处理异常，将任务转为单条处理模式！{}", mqid, e);
+                                Log.error(String.format("MQ消息处理异常，将任务转为单条处理模式！%s", mqid), e);
                                 Arrays.stream(Objects.requireNonNull(events)).forEach(event -> {
                                     try {
                                         eventRouteService.route(event);
                                     }catch (Exception e1){
-                                        Log.error("MQ消息处理异常！{}，table：{}，type：{}，id：{}", mqid, event.getTableKey(), event.getTypeName(), event.getPrimaryKey(), e);
+                                        Log.error(String.format("MQ消息处理异常！%s，table：%s，type：%s，id：%s", mqid, event.getTableKey(), event.getTypeName(), event.getPrimaryKey()), e1);
                                     }
                                 });
                             }
