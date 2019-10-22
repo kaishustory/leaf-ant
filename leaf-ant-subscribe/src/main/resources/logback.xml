@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<!-- 引入SpringBoot默认配置 -->
+	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
+	<!-- 控制台日志 -->
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>
+				%date{yyyy-MM-dd HH:mm:ss} %-5level ${PID:- } --- [%thread:%X{requestId}] %c.%M - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<!-- 日志文件（按日归档） -->
+	<appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 文件名称 -->
+		<File>${LOG_PATH}/${LOG_FILE}.log</File>
+		<!-- 日志按日归档 -->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- 按日归档文件名称 -->
+			<FileNamePattern>${LOG_PATH}/${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!-- 文件最大尺寸 -->
+				<maxFileSize>64 MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<encoder>
+			<!-- 格式 -->
+			<Pattern>
+				%date{yyyy-MM-dd HH:mm:ss} %-5level ${PID:- } --- [%thread:%X{requestId}] %c.%M - %msg%n
+			</Pattern>
+		</encoder>
+	</appender>
+
+	<!-- 异常日志文件（按日归档） -->
+	<appender name="errorRoolingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 文件名称 -->
+		<File>${LOG_PATH}/${LOG_FILE}.error.log</File>
+		<!-- 日志按日归档 -->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- 按日归档文件名称 -->
+			<FileNamePattern>${LOG_PATH}/${LOG_FILE}.%d{yyyy-MM-dd}.error.%i.log</FileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!-- 文件最大尺寸 -->
+				<maxFileSize>64 MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<encoder>
+			<!-- 格式 -->
+			<Pattern>
+				%date{yyyy-MM-dd HH:mm:ss} %-5level ${PID:- } --- [%thread:%X{requestId}] %c.%M - %msg%n
+			</Pattern>
+		</encoder>
+		<!-- 只记录ERROR级别日志 -->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>
+		</filter>
+	</appender>
+
+	<!-- 日志启用列表 -->
+	<root level="INFO">
+		<appender-ref ref="console"/>
+		<appender-ref ref="dailyRollingFileAppender"/>
+		<appender-ref ref="errorRoolingFileAppender"/>
+	</root>
+
+	<jmxConfigurator />
+</configuration>
