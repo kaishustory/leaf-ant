@@ -14,6 +14,8 @@
 package com.kaishustory.leafant.common.utils;
 
 
+import java.text.DecimalFormat;
+
 /**
  * 计时器
  * @author liguoyang
@@ -54,7 +56,7 @@ public class Time {
 		this.endTime = System.currentTimeMillis();
 		float time = (endTime - beginTime);
 		Log.info(name+" 处理完成");
-		Log.info(name+" 耗时："+ NumberUtils.f2(time)+"/ms");
+		Log.info(name+" 耗时："+ new DecimalFormat("#.##").format(time)+"/ms");
 	}
 
 }
