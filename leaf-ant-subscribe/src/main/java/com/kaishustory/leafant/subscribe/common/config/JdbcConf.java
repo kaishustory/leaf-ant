@@ -47,36 +47,44 @@ public class JdbcConf {
 
     /**
      * 获得MySQL连接
+     *
      * @param dataSourceConfig 数据源配置
      * @return 连接
      * @throws SQLException
      */
     @SneakyThrows
-    public Connection getConn(SyncDataSourceConfig dataSourceConfig){
+    public Connection getConn(SyncDataSourceConfig dataSourceConfig) {
         String[] hostPort = dataSourceConfig.getUrl().split(":");
-        if(hostPort.length!=2){ Log.errorThrow("数据库地址格式错误！{}", dataSourceConfig.getRds()); }
-        if(dataSourceConfig.getUsername()==null){ Log.errorThrow("数据库账号为空！{}", dataSourceConfig.getRds());}
-        if(dataSourceConfig.getPassword()==null){ Log.errorThrow("数据库密码为空！{}", dataSourceConfig.getRds());}
+        if (hostPort.length != 2) {
+            Log.errorThrow("数据库地址格式错误！{}", dataSourceConfig.getRds());
+        }
+        if (dataSourceConfig.getUsername() == null) {
+            Log.errorThrow("数据库账号为空！{}", dataSourceConfig.getRds());
+        }
+        if (dataSourceConfig.getPassword() == null) {
+            Log.errorThrow("数据库密码为空！{}", dataSourceConfig.getRds());
+        }
 
         return getConn(hostPort[0], hostPort[1], dataSourceConfig.getDatabase(), dataSourceConfig.getUsername(), dataSourceConfig.getPassword());
     }
 
     /**
      * 获得MySQL连接
-     * @param host 地址
-     * @param port 端口
+     *
+     * @param host     地址
+     * @param port     端口
      * @param database 数据库
-     * @param user 用户
+     * @param user     用户
      * @param password 密码
      * @return 连接
      * @throws SQLException
      */
     @SneakyThrows
     private Connection getConn(String host, String port, String database, String user, String password) throws SQLException {
-        String dataSourceKey = host+":"+port+":"+database;
-        if(connPool.containsKey(dataSourceKey)){
+        String dataSourceKey = host + ":" + port + ":" + database;
+        if (connPool.containsKey(dataSourceKey)) {
             return connPool.get(dataSourceKey).getConnection();
-        }else {
+        } else {
             // 创建连接池
             HikariDataSource dataSource = new HikariDataSource();
             dataSource.setPoolName(database);

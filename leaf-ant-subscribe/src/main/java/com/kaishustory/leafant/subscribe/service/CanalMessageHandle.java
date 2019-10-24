@@ -26,7 +26,8 @@ import com.kaishustory.leafant.subscribe.model.RowChangeInfo;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.kaishustory.leafant.common.constants.MappingConstants.SOURCE_CANAL;
@@ -62,6 +63,7 @@ public class CanalMessageHandle implements ICanalMessageHandle {
 
     /**
      * Canal订阅处理
+     *
      * @param message 数据变更消息
      * @return 是否成功
      */
@@ -75,22 +77,23 @@ public class CanalMessageHandle implements ICanalMessageHandle {
 
         // 批量发送MQ
         eventLists.stream()
-        // 按【实例:数据库:表】分组
-        .collect(Collectors.groupingBy(Event::getTableKey))
-        // 分组发送MQ
-        .forEach((groupKey, value) -> {
-            // 发送MQ消息
-            mqSendService.send(eventLists);
-        });
+                // 按【实例:数据库:表】分组
+                .collect(Collectors.groupingBy(Event::getTableKey))
+                // 分组发送MQ
+                .forEach((groupKey, value) -> {
+                    // 发送MQ消息
+                    mqSendService.send(eventLists);
+                });
         return true;
     }
 
     /**
      * 数据修改操作列表
+     *
      * @param message 消息
      * @return 事件列表
      */
-    private List<Event> getEventList(Message message){
+    private List<Event> getEventList(Message message) {
 
         return message.getEntries().stream().filter(entry -> entry.getEntryType() == CanalEntry.EntryType.ROWDATA).map(entry -> {
             try {
@@ -102,60 +105,62 @@ public class CanalMessageHandle implements ICanalMessageHandle {
                 val eventType = rowChange.getEventType();
 
                 //数据修改命令（非查询命令、非表结构修改命令）
-                if(eventType != CanalEntry.EventType.QUERY && !rowChange.getIsDdl()){
+                if (eventType != CanalEntry.EventType.QUERY && !rowChange.getIsDdl()) {
                     //记录数据变更
-                    return new RowChangeInfo(entry.getHeader(),rowChange);
-                }else {
+                    return new RowChangeInfo(entry.getHeader(), rowChange);
+                } else {
                     return null;
                 }
 
-            }catch (InvalidProtocolBufferException e){
-                log.error("ProtocolBuffer 解码异常！",e);
+            } catch (InvalidProtocolBufferException e) {
+                log.error("ProtocolBuffer 解码异常！", e);
                 throw new RuntimeException(e);
             }
 
         })
-        // 过滤无效事务
-        .filter(Objects::nonNull)
-        // 过滤未配置的事件
-        .filter(event -> allMappingCache.has(server, event.getHeader().getSchemaName(), event.getHeader().getTableName()))
-        // 将事务拆分为事件列表
-        .flatMap(event -> event.getRowChange().getRowDatasList().stream().map(row ->
-                // 转为事件
-                new Event(
-                        event.getHeader().getSourceType().name(), // 数据库类型
-                        SOURCE_CANAL, // 来源 Canal
-                        server, // 数据库实例名称
-                        event.getHeader().getSchemaName(), // 数据库
-                        event.getHeader().getTableName(), // 表
-                        event.getRowChange().getEventType().getNumber(), // 操作类型（1：新增，2：修改，3：删除）
-                        event.getRowChange().getEventType().getValueDescriptor().getName(), // 操作类型名称
-                        getPrimaryKey(row), // 主键值
-                        toColumnList(row.getBeforeColumnsList()), // 之前字段内容
-                        toColumnList(row.getAfterColumnsList()), // 之后字段内容
-                        event.getHeader().getExecuteTime(), // 发生时间
-                        event.getHeader().getServerId(),
-                        event.getHeader().getLogfileName(),
-                        event.getHeader().getLogfileOffset()
-                    )))
-        .collect(Collectors.toList());
+                // 过滤无效事务
+                .filter(Objects::nonNull)
+                // 过滤未配置的事件
+                .filter(event -> allMappingCache.has(server, event.getHeader().getSchemaName(), event.getHeader().getTableName()))
+                // 将事务拆分为事件列表
+                .flatMap(event -> event.getRowChange().getRowDatasList().stream().map(row ->
+                        // 转为事件
+                        new Event(
+                                event.getHeader().getSourceType().name(), // 数据库类型
+                                SOURCE_CANAL, // 来源 Canal
+                                server, // 数据库实例名称
+                                event.getHeader().getSchemaName(), // 数据库
+                                event.getHeader().getTableName(), // 表
+                                event.getRowChange().getEventType().getNumber(), // 操作类型（1：新增，2：修改，3：删除）
+                                event.getRowChange().getEventType().getValueDescriptor().getName(), // 操作类型名称
+                                getPrimaryKey(row), // 主键值
+                                toColumnList(row.getBeforeColumnsList()), // 之前字段内容
+                                toColumnList(row.getAfterColumnsList()), // 之后字段内容
+                                event.getHeader().getExecuteTime(), // 发生时间
+                                event.getHeader().getServerId(),
+                                event.getHeader().getLogfileName(),
+                                event.getHeader().getLogfileOffset()
+                        )))
+                .collect(Collectors.toList());
     }
 
     /**
      * 主键值
+     *
      * @param row 字段信息
      * @return 主键值
      */
-    private String getPrimaryKey(CanalEntry.RowData row){
-        return (row.getBeforeColumnsCount()>0 ?row.getBeforeColumnsList() : row.getAfterColumnsList()).stream().filter(CanalEntry.Column::getIsKey).map(CanalEntry.Column::getValue).reduce((a,b) -> a+":"+b).orElse("");
+    private String getPrimaryKey(CanalEntry.RowData row) {
+        return (row.getBeforeColumnsCount() > 0 ? row.getBeforeColumnsList() : row.getAfterColumnsList()).stream().filter(CanalEntry.Column::getIsKey).map(CanalEntry.Column::getValue).reduce((a, b) -> a + ":" + b).orElse("");
     }
 
     /**
      * 列字段转换
+     *
      * @param columns
      * @return
      */
-    private List<EventColumn> toColumnList(List<CanalEntry.Column> columns){
-        return columns.stream().map(column -> new EventColumn(column.getIsKey(), column.getIndex(),column.getName(), StringUtils.isNotNull(column.getValue()) ? column.getValue() : null, column.getMysqlType(), column.getSqlType(), column.getUpdated(), column.getIsNull())).collect(Collectors.toList());
+    private List<EventColumn> toColumnList(List<CanalEntry.Column> columns) {
+        return columns.stream().map(column -> new EventColumn(column.getIsKey(), column.getIndex(), column.getName(), StringUtils.isNotNull(column.getValue()) ? column.getValue() : null, column.getMysqlType(), column.getSqlType(), column.getUpdated(), column.getIsNull())).collect(Collectors.toList());
     }
 }

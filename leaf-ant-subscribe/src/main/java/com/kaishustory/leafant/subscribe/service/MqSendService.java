@@ -63,11 +63,12 @@ public class MqSendService {
 
     /**
      * 批量发送MQ消息
+     *
      * @param eventLists 事件列表
      */
     public List<String> send(List<Event> eventLists) {
 
-        if (eventLists == null || eventLists.size() == 0){
+        if (eventLists == null || eventLists.size() == 0) {
             return new ArrayList<>();
         }
 
@@ -99,11 +100,11 @@ public class MqSendService {
 
                 // 发送消息
                 getProducer(simple.getSource()).sendOneway(msg,
-                    // Hash分片值【实例_数据库_表名】
-                    (mqs, msg1, key) -> {
-                        return mqs.get(Math.abs(Objects.hash(key)) % mqs.size());
-                    },
-                    simple.getTableKey());
+                        // Hash分片值【实例_数据库_表名】
+                        (mqs, msg1, key) -> {
+                            return mqs.get(Math.abs(Objects.hash(key)) % mqs.size());
+                        },
+                        simple.getTableKey());
 
 //              eventList.forEach(event -> Log.info("MQID：{}，Table：{}，Event：{}，Updated：{}", msg.getMsgID(), event.getTableKey(), event.getTypeName(), event.getUpdateColumnsBase()));
                 mqid.add(msg.getProperty("UNIQ_KEY"));
@@ -122,19 +123,21 @@ public class MqSendService {
 
     /**
      * 获得MQ 发送者
+     *
      * @param source 事件来源
      * @return 发送者
      */
-    private MQProducer getProducer(String source){
+    private MQProducer getProducer(String source) {
         return SOURCE_INIT.equals(source) ? loadProducer : syncProducer;
     }
 
     /**
      * 获得MQ Topic
+     *
      * @param source 事件来源
      * @return Topic
      */
-    private String getTopic(String source){
+    private String getTopic(String source) {
         return SOURCE_INIT.equals(source) ? loadTopic : syncTopic;
     }
 }

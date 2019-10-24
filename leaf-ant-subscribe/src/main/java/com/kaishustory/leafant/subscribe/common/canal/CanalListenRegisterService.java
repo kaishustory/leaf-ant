@@ -12,7 +12,6 @@
 
 package com.kaishustory.leafant.subscribe.common.canal;
 
-import com.kaishustory.leafant.subscribe.common.canal.CanalListener;
 import com.kaishustory.leafant.subscribe.service.CanalMessageHandle;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -44,7 +43,7 @@ public class CanalListenRegisterService {
     /**
      * Canal事件监听注册
      */
-    public void canalListenRegister(){
+    public void canalListenRegister() {
 
         // 监听数据库
         Arrays.stream(destination.split(",")).forEach(server -> {
@@ -55,7 +54,7 @@ public class CanalListenRegisterService {
             // 监听线程
             Thread canalThread = new Thread(listener);
             // 线程名称
-            canalThread.setName("canal-listen-"+server);
+            canalThread.setName("canal-listen-" + server);
             // 记录监听
             listenerList.add(listener);
             // 线程启动
@@ -63,7 +62,7 @@ public class CanalListenRegisterService {
         });
 
         // 服务停机前处理，等待已订阅数据处理完成
-        Runtime.getRuntime().addShutdownHook(new Thread(()->
+        Runtime.getRuntime().addShutdownHook(new Thread(() ->
                 listenerList.forEach(CanalListener::stop))
         );
     }

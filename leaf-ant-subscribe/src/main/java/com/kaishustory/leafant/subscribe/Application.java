@@ -12,8 +12,8 @@
 
 package com.kaishustory.leafant.subscribe;
 
-import com.kaishustory.leafant.subscribe.common.utils.BeanFactory;
 import com.kaishustory.leafant.subscribe.common.canal.CanalListenRegisterService;
+import com.kaishustory.leafant.subscribe.common.utils.BeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.dao.PersistenceExceptionTranslationAutoConfiguration;
@@ -40,6 +40,7 @@ public class Application {
 
     /**
      * 项目启动
+     *
      * @param args
      */
     public static void main(String[] args) {
@@ -52,7 +53,7 @@ public class Application {
     /**
      * 获取系统配置
      */
-    public static ConfigurableApplicationContext getConfig(){
+    public static ConfigurableApplicationContext getConfig() {
         return ctx;
     }
 

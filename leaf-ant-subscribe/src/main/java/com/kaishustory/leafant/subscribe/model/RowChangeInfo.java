@@ -24,6 +24,15 @@ import lombok.Data;
 @Data
 public class RowChangeInfo {
 
+    /**
+     * 基本信息
+     */
+    private CanalEntry.Header header;
+    /**
+     * 变更信息
+     */
+    private CanalEntry.RowChange rowChange;
+
     public RowChangeInfo() {
     }
 
@@ -31,14 +40,4 @@ public class RowChangeInfo {
         this.header = header;
         this.rowChange = rowChange;
     }
-
-    /**
-     * 基本信息
-     */
-    private CanalEntry.Header header;
-
-    /**
-     * 变更信息
-     */
-    private CanalEntry.RowChange rowChange;
 }

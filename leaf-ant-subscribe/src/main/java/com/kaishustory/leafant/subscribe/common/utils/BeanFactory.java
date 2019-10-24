@@ -19,16 +19,26 @@ import org.springframework.stereotype.Component;
 
 /**
  * Spring BeanFactory
+ *
  * @author liguoyang
  * @create 2018-05-06 下午6:00
  **/
 @Component
-public class BeanFactory implements ApplicationContextAware{
+public class BeanFactory implements ApplicationContextAware {
 
     /**
      * 上下文对象实例
      */
     private static ApplicationContext applicationContext;
+
+    /**
+     * 获取applicationContext
+     *
+     * @return
+     */
+    public static ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -36,40 +46,35 @@ public class BeanFactory implements ApplicationContextAware{
     }
 
     /**
-     * 获取applicationContext
-     * @return
-     */
-    public static ApplicationContext getApplicationContext() {
-        return applicationContext;
-    }
-
-    /**
      * 通过name获取 Bean.
+     *
      * @param name
      * @return
      */
-    public static Object getBean(String name){
+    public static Object getBean(String name) {
         return getApplicationContext().getBean(name);
     }
 
     /**
      * 通过class获取Bean.
+     *
      * @param clazz
      * @param <T>
      * @return
      */
-    public static <T> T getBean(Class<T> clazz){
+    public static <T> T getBean(Class<T> clazz) {
         return getApplicationContext().getBean(clazz);
     }
 
     /**
      * 通过name,以及Clazz返回指定的Bean
+     *
      * @param name
      * @param clazz
      * @param <T>
      * @return
      */
-    public static <T> T getBean(String name,Class<T> clazz){
+    public static <T> T getBean(String name, Class<T> clazz) {
         return getApplicationContext().getBean(name, clazz);
     }
 }

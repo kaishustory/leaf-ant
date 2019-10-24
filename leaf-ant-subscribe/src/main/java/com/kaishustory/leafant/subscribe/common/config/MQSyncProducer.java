@@ -40,7 +40,7 @@ public class MQSyncProducer {
      */
     @Primary
     @Bean("syncMQ")
-    public MQProducer createProducer(@Value("${mq.sync.groupId}") String group, @Value("${mq.addr}") String addr){
+    public MQProducer createProducer(@Value("${mq.sync.groupId}") String group, @Value("${mq.addr}") String addr) {
         try {
             DefaultMQProducer producer = new DefaultMQProducer(group);
             producer.setNamesrvAddr(addr);

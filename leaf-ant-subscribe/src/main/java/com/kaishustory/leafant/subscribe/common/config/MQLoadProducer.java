@@ -12,7 +12,6 @@
 
 package com.kaishustory.leafant.subscribe.common.config;
 
-import com.google.common.base.Strings;
 import com.kaishustory.leafant.common.utils.Log;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -36,7 +35,7 @@ public class MQLoadProducer {
      */
     @Primary
     @Bean("loadMQ")
-    public MQProducer createProducer(@Value("${mq.load.groupId}") String group, @Value("${mq.addr}") String addr){
+    public MQProducer createProducer(@Value("${mq.load.groupId}") String group, @Value("${mq.addr}") String addr) {
         try {
             DefaultMQProducer producer = new DefaultMQProducer(group);
             producer.setNamesrvAddr(addr);

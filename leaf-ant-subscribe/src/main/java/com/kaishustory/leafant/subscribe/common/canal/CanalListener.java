@@ -22,7 +22,6 @@ import com.kaishustory.leafant.subscribe.Application;
 import com.kaishustory.leafant.subscribe.interfaces.ICanalMessageHandle;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.concurrent.locks.Lock;
@@ -37,7 +36,7 @@ import static java.lang.String.format;
  * @create 2019-07-09 15:34
  **/
 @Slf4j
-public class CanalListener implements Runnable{
+public class CanalListener implements Runnable {
 
     /**
      * 数据库实例
@@ -61,6 +60,7 @@ public class CanalListener implements Runnable{
 
     /**
      * 构造
+     *
      * @param server 数据库
      */
     public CanalListener(String server, ICanalMessageHandle canalMessageHandle) {
@@ -98,18 +98,18 @@ public class CanalListener implements Runnable{
                             //判断是否有可处理消息
                             if (batchId == -1 || size == 0) {
                                 // 回应处理成功
-                                if(batchId!=-1) {
+                                if (batchId != -1) {
                                     conn.ack(batchId);
                                 }
                                 //无更新消息，
 //                                Thread.sleep(3);
-                            }else {
+                            } else {
                                 Time time = new Time(format("任务处理. 数据库实例：%s，数据表：%s，BatchId：%d，Size：%d",
                                         server,
-                                        message.getEntries().stream().filter(entry -> entry.getEntryType() == CanalEntry.EntryType.ROWDATA).map(entry -> entry.getHeader().getSchemaName()+"."+entry.getHeader().getTableName()).distinct().filter(StringUtils::isNotNull).reduce((a, b) -> a+","+b).orElse(""),
+                                        message.getEntries().stream().filter(entry -> entry.getEntryType() == CanalEntry.EntryType.ROWDATA).map(entry -> entry.getHeader().getSchemaName() + "." + entry.getHeader().getTableName()).distinct().filter(StringUtils::isNotNull).reduce((a, b) -> a + "," + b).orElse(""),
                                         batchId,
                                         message.getEntries().stream().filter(entry -> entry.getEntryType() == CanalEntry.EntryType.ROWDATA).count()
-                                        ));
+                                ));
                                 try {
                                     // 任务批量处理
                                     boolean ack = canalMessageHandle.handle(message);
@@ -122,15 +122,15 @@ public class CanalListener implements Runnable{
                                         conn.rollback(batchId);
                                         log.error("任务处理失败！数据库实例：{}，BatchId：{}", server, batchId);
                                     }
-                                }catch (Throwable t) {
+                                } catch (Throwable t) {
                                     //处理失败，回滚数据
                                     conn.rollback(batchId);
                                     log.error("任务处理发生异常！数据库实例：{}，BatchId：{}", server, batchId, t);
-                                }finally {
+                                } finally {
                                     time.end();
                                 }
                             }
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             log.error("canal 消息订阅异常！数据库实例：{}", server, e);
                             //尝试重连
                             try {
@@ -149,7 +149,7 @@ public class CanalListener implements Runnable{
                     Thread.sleep(1000);
                 }
             }
-        }finally {
+        } finally {
             log.info("订阅数据已处理完成，可以关闭服务。数据库实例：{}", server);
             runlock.unlock();
         }
@@ -159,8 +159,10 @@ public class CanalListener implements Runnable{
     /**
      * 停止订阅
      */
-    public void stop(){
-        if (!running) { return; }
+    public void stop() {
+        if (!running) {
+            return;
+        }
         running = false;
 
         // 尝试获得运行锁，以等待已订阅数据处理完成
@@ -171,7 +173,7 @@ public class CanalListener implements Runnable{
     /**
      * 获得Canal连接
      */
-    private CanalConnector getConnection(){
+    private CanalConnector getConnection() {
         ConfigurableApplicationContext ctx = Application.getConfig();
         return CanalConnectors.newClusterConnector(
                 ctx.getEnvironment().getProperty("zookeeper.url"),

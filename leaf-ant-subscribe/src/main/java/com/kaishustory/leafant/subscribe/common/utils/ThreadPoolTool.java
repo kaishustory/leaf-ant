@@ -26,7 +26,7 @@ public class ThreadPoolTool {
 
     private final static ThreadPoolExecutor threadPool = new ThreadPoolExecutor(5, 500, 5, TimeUnit.MINUTES, new SynchronousQueue<>());
 
-    public static void exec(Runnable runnable){
+    public static void exec(Runnable runnable) {
         threadPool.execute(runnable);
     }
 }

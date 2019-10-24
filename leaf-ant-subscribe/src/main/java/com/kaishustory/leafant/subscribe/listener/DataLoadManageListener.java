@@ -78,27 +78,27 @@ public class DataLoadManageListener {
      * 初始数据加载事件监听
      */
     @PostConstruct
-    public void loadLister(){
+    public void loadLister() {
         // 监听同步映射配置消息
         new NettyConsumer(messageGroup, loadTopic, zookeeper, rpcRequest -> {
 
             // 数据初始化消息
-            if(ACTION_LOAD.equals(rpcRequest.getAction())) {
+            if (ACTION_LOAD.equals(rpcRequest.getAction())) {
                 try {
                     InitLoadInfo baseInitLoad = JsonUtils.fromJson(rpcRequest.getData(), InitLoadInfo.class);
 
                     boolean loadSuccess;
                     // ES 初始化
-                    if(TYPE_ES.equals(baseInitLoad.getTarget())) {
+                    if (TYPE_ES.equals(baseInitLoad.getTarget())) {
                         EsInitLoadInfo esInitLoadInfo = JsonUtils.fromJson(rpcRequest.getData(), EsInitLoadInfo.class);
                         loadSuccess = esInitLoad(esInitLoadInfo);
-                    }else {
+                    } else {
                         // 其他数据源 初始化
                         loadSuccess = commonInitLoad(baseInitLoad, false);
                     }
-                    if(loadSuccess){
+                    if (loadSuccess) {
                         return new RpcResponse("load-callback", "ok", RpcResponse.STATUS_SUCCESS);
-                    }else {
+                    } else {
                         return new RpcResponse("load-callback", "fail", RpcResponse.STATUS_FAIL);
                     }
                 } catch (Exception e) {
@@ -106,7 +106,7 @@ public class DataLoadManageListener {
                     return new RpcResponse("load-callback", "fail", RpcResponse.STATUS_FAIL);
                 }
 
-            }else {
+            } else {
                 Log.error("无法处理消息类型：{}", rpcRequest.getAction());
                 return RpcResponse.NO_REPLY;
             }
@@ -116,9 +116,10 @@ public class DataLoadManageListener {
 
     /**
      * ES：初始化全量数据加载
+     *
      * @param esInitLoadInfo 初始加载信息
      */
-    private boolean esInitLoad(EsInitLoadInfo esInitLoadInfo){
+    private boolean esInitLoad(EsInitLoadInfo esInitLoadInfo) {
 
         EsSyncConfig esSyncConfig = esInitLoadInfo.getEsSyncConfig();
 
@@ -129,21 +130,22 @@ public class DataLoadManageListener {
         boolean childResult = loadChildCopyData(esSyncConfig);
 
         // 初始化 ES数据
-        if(childResult){
+        if (childResult) {
             // 初始化ES数据
             return commonInitLoad(new InitLoadInfo(TYPE_ES, esSyncConfig.getId(), esSyncConfig.getMasterTable().getDataSourceConfig()), true);
-        }else {
+        } else {
             return false;
         }
     }
 
     /**
      * 通用：初始化全量数据加载
+     *
      * @param initLoadInfo 初始加载信息
      * @param master
      */
-    private boolean commonInitLoad(InitLoadInfo initLoadInfo, boolean master){
-        if(!master) {
+    private boolean commonInitLoad(InitLoadInfo initLoadInfo, boolean master) {
+        if (!master) {
             // 初始化中
             dataLoadDao.updateInitialized(new LoadStatus(initLoadInfo.getTarget(), initLoadInfo.getMappingId(), LOAD_STATUS_INITING));
         }
@@ -151,20 +153,20 @@ public class DataLoadManageListener {
         try {
             // 同步数据
             boolean loadSuccess = dataLoadDao.queryAllDataHandle(initLoadInfo, (rows, page, pageSize) -> {
-                Log.info("初始化全量数据：RdsKey：{}，Database：{}，Table：{}，Page：{}/{}，Size：{}", initLoadInfo.getDataSourceConfig().getRds(), initLoadInfo.getDataSourceConfig().getDatabase(), initLoadInfo.getDataSourceConfig().getTable(), page, pageSize, rows==null? 0:rows.size());
+                Log.info("初始化全量数据：RdsKey：{}，Database：{}，Table：{}，Page：{}/{}，Size：{}", initLoadInfo.getDataSourceConfig().getRds(), initLoadInfo.getDataSourceConfig().getDatabase(), initLoadInfo.getDataSourceConfig().getTable(), page, pageSize, rows == null ? 0 : rows.size());
                 return mqSendService.send(rows.stream().map(row -> new Event("MYSQL", SOURCE_INIT, initLoadInfo.getTarget(), initLoadInfo.getMappingId(), initLoadInfo.getDataSourceConfig().getRds(), initLoadInfo.getDataSourceConfig().getDatabase(), initLoadInfo.getDataSourceConfig().getTable(), 1, "INSERT", getPrimaryKey(row), new ArrayList<>(), row, System.currentTimeMillis())).collect(Collectors.toList()));
             });
-            if(loadSuccess) {
+            if (loadSuccess) {
                 // 初始化成功
                 dataLoadDao.updateInitialized(new LoadStatus(initLoadInfo.getTarget(), initLoadInfo.getMappingId(), LOAD_STATUS_COMPLETE));
                 Log.info("{} 初始化数据成功。database：{}，table：{}", initLoadInfo.getTarget(), initLoadInfo.getDataSourceConfig().getDatabase(), initLoadInfo.getDataSourceConfig().getTable());
-            }else {
+            } else {
                 Log.error("{} 初始化数据失败。database：{}，table：{}", initLoadInfo.getTarget(), initLoadInfo.getDataSourceConfig().getDatabase(), initLoadInfo.getDataSourceConfig().getTable());
                 // 初始化失败
                 dataLoadDao.updateInitialized(new LoadStatus(initLoadInfo.getTarget(), initLoadInfo.getMappingId(), LOAD_STATUS_FAIL));
             }
             return loadSuccess;
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("{} 初始化数据失败。database：{}，table：{}", initLoadInfo.getTarget(), initLoadInfo.getDataSourceConfig().getDatabase(), initLoadInfo.getDataSourceConfig().getTable(), e);
             // 初始化失败
             dataLoadDao.updateInitialized(new LoadStatus(initLoadInfo.getTarget(), initLoadInfo.getMappingId(), LOAD_STATUS_FAIL));
@@ -174,30 +176,31 @@ public class DataLoadManageListener {
 
     /**
      * 初始化子表副本数据
+     *
      * @param esSyncConfig ES配置
      * @return 是否成功
      */
-    private boolean loadChildCopyData(EsSyncConfig esSyncConfig){
+    private boolean loadChildCopyData(EsSyncConfig esSyncConfig) {
 
-        if(!esSyncConfig.isMult() || esSyncConfig.getMasterTable().getChildTable().size()==0){
+        if (!esSyncConfig.isMult() || esSyncConfig.getMasterTable().getChildTable().size() == 0) {
             return true;
         }
 
-        if(TYPE_REDIS.equals(esSyncConfig.getCopyChildType())) {
+        if (TYPE_REDIS.equals(esSyncConfig.getCopyChildType())) {
             // 初始化Redis 副本数据
             return esSyncConfig.getTableList().stream().filter(EsSyncMappingTable::isChild).map(table -> {
                 // Redis副本，初始数据消息
                 return commonInitLoad(new InitLoadInfo(TYPE_REDIS, table.getRedisMappingId(), table.getDataSourceConfig()), false);
             }).reduce((a, b) -> a && b).orElse(true);
 
-        }else if(TYPE_ES.equals(esSyncConfig.getCopyChildType())){
+        } else if (TYPE_ES.equals(esSyncConfig.getCopyChildType())) {
             // 初始化ES 副本数据
             return esSyncConfig.getMasterTable().getChildTable().stream().map(table -> {
                 // ES副本，初始数据消息
                 return esInitLoad(new EsInitLoadInfo(EsMappingService.toChildEsConfig(table, esSyncConfig.getIndex(), esSyncConfig.getEsAddr())));
             }).reduce((a, b) -> a && b).orElse(true);
 
-        }else {
+        } else {
             Log.errorThrow("不支持的副本子表类型：{}", esSyncConfig.getCopyChildType());
             return false;
         }
@@ -205,13 +208,13 @@ public class DataLoadManageListener {
 
     /**
      * 获得主键值
+     *
      * @param row 列集合
      * @return 主键值
      */
-    private String getPrimaryKey(List<EventColumn> row){
-        return row.stream().filter(EventColumn::isKey).map(EventColumn::getValue).reduce((a, b) -> a+":"+b).orElse("");
+    private String getPrimaryKey(List<EventColumn> row) {
+        return row.stream().filter(EventColumn::isKey).map(EventColumn::getValue).reduce((a, b) -> a + ":" + b).orElse("");
     }
-
 
 
 }

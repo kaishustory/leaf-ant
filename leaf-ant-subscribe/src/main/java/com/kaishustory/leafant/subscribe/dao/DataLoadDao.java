@@ -16,9 +16,9 @@ import com.kaishustory.leafant.common.model.*;
 import com.kaishustory.leafant.common.utils.DateUtils;
 import com.kaishustory.leafant.common.utils.Log;
 import com.kaishustory.leafant.mapping.dao.*;
+import com.kaishustory.leafant.mapping.model.LoadRecord;
 import com.kaishustory.leafant.mapping.model.LoadStats;
 import com.kaishustory.leafant.subscribe.common.config.JdbcConf;
-import com.kaishustory.leafant.mapping.model.LoadRecord;
 import com.kaishustory.leafant.subscribe.model.PriColInfo;
 import com.kaishustory.leafant.subscribe.model.TablePageInfo;
 import lombok.SneakyThrows;
@@ -28,8 +28,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -93,9 +95,9 @@ public class DataLoadDao {
 
     private ThreadPoolExecutor threadPool;
 
-    private ThreadPoolExecutor getThreadPool(){
-        synchronized (this){
-            if(threadPool == null) {
+    private ThreadPoolExecutor getThreadPool() {
+        synchronized (this) {
+            if (threadPool == null) {
                 synchronized (this) {
                     threadPool = new ThreadPoolExecutor(loadMaxPool, loadMaxPool, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>(Integer.MAX_VALUE));
                 }
@@ -106,12 +108,13 @@ public class DataLoadDao {
 
     /**
      * 数据查询
+     *
      * @param dataSourceConfig 数据源配置
-     * @param sql SQL
+     * @param sql              SQL
      * @return 数据列表
      */
     @SneakyThrows
-    private List<List<EventColumn>> query(SyncDataSourceConfig dataSourceConfig, String sql){
+    private List<List<EventColumn>> query(SyncDataSourceConfig dataSourceConfig, String sql) {
 
         Connection conn = null;
         Statement statement = null;
@@ -127,7 +130,7 @@ public class DataLoadDao {
 
             // 结果提取转换
             List<List<EventColumn>> rows = new ArrayList<>();
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 List<EventColumn> eventColumnList = new ArrayList<>(metaData.getColumnCount());
                 for (int i = 1; i <= metaData.getColumnCount(); i++) {
                     String column = metaData.getColumnName(i);
@@ -137,25 +140,31 @@ public class DataLoadDao {
                     String value = getColumnValue(type, resultSet, i);
                     eventColumnList.add(new EventColumn(
                             false,
-                            i-1,
+                            i - 1,
                             column,
                             value,
-                            size>0 ? (typeName+"("+size+")").toLowerCase() : typeName.toLowerCase(),
+                            size > 0 ? (typeName + "(" + size + ")").toLowerCase() : typeName.toLowerCase(),
                             type,
                             true,
-                            value==null
+                            value == null
                     ));
                 }
                 rows.add(eventColumnList);
             }
             return rows;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("数据库查询发生异常！", e);
-        }finally {
-            if(resultSet!=null && !resultSet.isClosed()){ resultSet.close();}
-            if(statement!=null && !statement.isClosed()){ statement.close();}
-            if(conn!=null && !conn.isClosed()){ conn.close();}
+        } finally {
+            if (resultSet != null && !resultSet.isClosed()) {
+                resultSet.close();
+            }
+            if (statement != null && !statement.isClosed()) {
+                statement.close();
+            }
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
         }
         return new ArrayList<>();
     }
@@ -163,28 +172,29 @@ public class DataLoadDao {
 
     /**
      * 查询全部数据，分页处理
-     * @param initLoadInfo 初始化信息
+     *
+     * @param initLoadInfo   初始化信息
      * @param dataLoadHandle 数据处理
      */
     @SneakyThrows
-    public boolean queryAllDataHandle(InitLoadInfo initLoadInfo, DataLoadHandle dataLoadHandle){
+    public boolean queryAllDataHandle(InitLoadInfo initLoadInfo, DataLoadHandle dataLoadHandle) {
 
         // 查询主键列表
         Optional<PriColInfo> prikey = queryPriKeys(initLoadInfo.getDataSourceConfig());
 
-        if(prikey.isPresent()) {
+        if (prikey.isPresent()) {
 
             // 删除主键自增
-            if(TYPE_MYSQL.equals(initLoadInfo.getTarget())) {
+            if (TYPE_MYSQL.equals(initLoadInfo.getTarget())) {
                 removeAutoIncrement(initLoadInfo.getMappingId(), prikey.get());
             }
 
             // 主键类型是否位数字
-            if(prikey.get().isNum()) {
+            if (prikey.get().isNum()) {
                 /** 按主键为分页条件，分页查询 **/
                 idPageHandler(initLoadInfo, prikey.get(), dataLoadHandle);
 
-            }else {
+            } else {
                 /** 按序号为分页条件，分页查询 **/
                 limitPageHandler(initLoadInfo, prikey.get(), dataLoadHandle);
             }
@@ -193,13 +203,13 @@ public class DataLoadDao {
             boolean ok = waitComplete(initLoadInfo);
 
             // 添加主键自增
-            if(TYPE_MYSQL.equals(initLoadInfo.getTarget())) {
+            if (TYPE_MYSQL.equals(initLoadInfo.getTarget())) {
                 addAutoIncrement(initLoadInfo.getMappingId(), prikey.get());
             }
 
             return ok;
 
-        }else {
+        } else {
             Log.errorThrow("不存在主键，无法同步数据。table：{}", initLoadInfo.getDataSourceConfig().getTable());
             return false;
         }
@@ -208,11 +218,12 @@ public class DataLoadDao {
 
     /**
      * ID模式分页查询处理
-     * @param initLoadInfo 初始化信息
-     * @param prikey 主键信息
+     *
+     * @param initLoadInfo   初始化信息
+     * @param prikey         主键信息
      * @param dataLoadHandle 分页处理
      */
-    private void idPageHandler(InitLoadInfo initLoadInfo, PriColInfo prikey, DataLoadHandle dataLoadHandle){
+    private void idPageHandler(InitLoadInfo initLoadInfo, PriColInfo prikey, DataLoadHandle dataLoadHandle) {
 
         // 查询记录总数
         TablePageInfo pageInfo = queryAllDataCount(initLoadInfo.getDataSourceConfig(), initLoadInfo.getDataSourceConfig().getTable(), prikey.getCol());
@@ -225,9 +236,9 @@ public class DataLoadDao {
         for (int i = 0; i < pageSize; i++) {
 
             // 查询任务是否存在
-            LoadRecord loadRecord = loadRecordDao.findRecordByPage(MODE_ID, initLoadInfo.getTarget(), initLoadInfo.getMappingId(), initLoadInfo.getDataSourceConfig().getTable(), i+1, pageSize);
+            LoadRecord loadRecord = loadRecordDao.findRecordByPage(MODE_ID, initLoadInfo.getTarget(), initLoadInfo.getMappingId(), initLoadInfo.getDataSourceConfig().getTable(), i + 1, pageSize);
 
-            if(loadRecord == null) {
+            if (loadRecord == null) {
                 // 保存初始化记录
                 loadRecord = loadRecordDao.addRecord(
                         initLoadInfo.getTarget(),
@@ -241,22 +252,22 @@ public class DataLoadDao {
                         i + 1,
                         pageSize
                 );
-                Log.info("创建初始化任务。table：{}，page：{}", initLoadInfo.getDataSourceConfig().getTable(), i+1);
+                Log.info("创建初始化任务。table：{}，page：{}", initLoadInfo.getDataSourceConfig().getTable(), i + 1);
             }
 
             // 只有等待处理和处理失败的任务，会被加入处理队列
-            if(STATUS_WAIT.equals(loadRecord.getStatus()) || STATUS_FAIL.equals(loadRecord.getStatus())) {
+            if (STATUS_WAIT.equals(loadRecord.getStatus()) || STATUS_FAIL.equals(loadRecord.getStatus())) {
                 loadRecordQueue.addFirst(loadRecord);
-            }else {
-                Log.info("已处理任务跳过。table：{}，page：{}", initLoadInfo.getDataSourceConfig().getTable(), i+1);
+            } else {
+                Log.info("已处理任务跳过。table：{}，page：{}", initLoadInfo.getDataSourceConfig().getTable(), i + 1);
             }
         }
 
         do {
             // 按照查询分页要求，将多个任务聚合到一起
-            List<LoadRecord> loadRecordList = findTaskList(loadRecordQueue, (int)Math.ceil(querySize/mqSize));
+            List<LoadRecord> loadRecordList = findTaskList(loadRecordQueue, (int) Math.ceil(querySize / mqSize));
 
-            if(loadRecordList.size()>0) {
+            if (loadRecordList.size() > 0) {
                 getThreadPool().execute(() -> {
                     try {
                         com.kaishustory.leafant.common.utils.Time time = new com.kaishustory.leafant.common.utils.Time("按ID分页初始化");
@@ -278,16 +289,17 @@ public class DataLoadDao {
                     }
                 });
             }
-        }while (loadRecordQueue.size()>0);
+        } while (loadRecordQueue.size() > 0);
     }
 
     /**
      * Limit模式分页查询处理
-     * @param initLoadInfo 初始化信息
-     * @param prikey 主键信息
+     *
+     * @param initLoadInfo   初始化信息
+     * @param prikey         主键信息
      * @param dataLoadHandle 分页处理
      */
-    private void limitPageHandler(InitLoadInfo initLoadInfo, PriColInfo prikey, DataLoadHandle dataLoadHandle){
+    private void limitPageHandler(InitLoadInfo initLoadInfo, PriColInfo prikey, DataLoadHandle dataLoadHandle) {
 
         // 查询记录总数
         TablePageInfo pageInfo = queryAllDataCount(initLoadInfo.getDataSourceConfig(), initLoadInfo.getDataSourceConfig().getTable(), prikey.getCol());
@@ -301,9 +313,9 @@ public class DataLoadDao {
         for (int i = 0; i < pageSize; i++) {
 
             // 查询任务是否存在
-            LoadRecord loadRecord = loadRecordDao.findRecordByPage(MODE_LIMIT, initLoadInfo.getTarget(), initLoadInfo.getMappingId(), initLoadInfo.getDataSourceConfig().getTable(), i+1, pageSize);
+            LoadRecord loadRecord = loadRecordDao.findRecordByPage(MODE_LIMIT, initLoadInfo.getTarget(), initLoadInfo.getMappingId(), initLoadInfo.getDataSourceConfig().getTable(), i + 1, pageSize);
 
-            if(loadRecord==null) {
+            if (loadRecord == null) {
                 // 保存初始化记录
                 loadRecord = loadRecordDao.addRecord(
                         initLoadInfo.getTarget(),
@@ -319,23 +331,23 @@ public class DataLoadDao {
             }
 
             // 只有等待处理和处理失败的任务，会被加入处理队列
-            if(STATUS_WAIT.equals(loadRecord.getStatus()) || STATUS_FAIL.equals(loadRecord.getStatus())) {
+            if (STATUS_WAIT.equals(loadRecord.getStatus()) || STATUS_FAIL.equals(loadRecord.getStatus())) {
                 loadRecordQueue.addFirst(loadRecord);
-            }else {
-                Log.info("已处理任务跳过。table：{}，page：{}", initLoadInfo.getDataSourceConfig().getTable(), i+1);
+            } else {
+                Log.info("已处理任务跳过。table：{}，page：{}", initLoadInfo.getDataSourceConfig().getTable(), i + 1);
             }
         }
 
         do {
             // 按照查询分页要求，将多个任务聚合到一起
-            List<LoadRecord> loadRecordList = findTaskList(loadRecordQueue, (int)Math.ceil(querySize/mqSize));
+            List<LoadRecord> loadRecordList = findTaskList(loadRecordQueue, (int) Math.ceil(querySize / mqSize));
 
-            if(loadRecordList.size()>0) {
+            if (loadRecordList.size() > 0) {
                 getThreadPool().execute(() -> {
                     try {
                         com.kaishustory.leafant.common.utils.Time time = new com.kaishustory.leafant.common.utils.Time("按序号分页初始化");
                         // 分页查询数据
-                        List<List<EventColumn>> allRows = queryData(initLoadInfo.getDataSourceConfig(), initLoadInfo.getDataSourceConfig().getTable(), loadRecordList.get(0).getStart(), (int) (loadRecordList.get(loadRecordList.size()-1).getEnd() - loadRecordList.get(0).getStart()));
+                        List<List<EventColumn>> allRows = queryData(initLoadInfo.getDataSourceConfig(), initLoadInfo.getDataSourceConfig().getTable(), loadRecordList.get(0).getStart(), (int) (loadRecordList.get(loadRecordList.size() - 1).getEnd() - loadRecordList.get(0).getStart()));
 
                         // 设置主键标记
                         allRows.forEach(row -> row.forEach(column -> {
@@ -353,31 +365,32 @@ public class DataLoadDao {
                     }
                 });
             }
-        }while (loadRecordQueue.size()>0);
+        } while (loadRecordQueue.size() > 0);
     }
 
     /**
      * 等待完成
+     *
      * @param initLoadInfo 初始化信息
      */
     @SneakyThrows
-    private boolean waitComplete(InitLoadInfo initLoadInfo){
+    private boolean waitComplete(InitLoadInfo initLoadInfo) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
         // 等待任务处理结果
-        while (true){
+        while (true) {
             LoadStats stats = loadRecordDao.findLoadStats(initLoadInfo.getTarget(), initLoadInfo.getMappingId(), initLoadInfo.getDataSourceConfig().getTable());
-            if(stats.getWait()==0L && stats.getSend()==0L){
-                if(stats.getFail() == 0L) {
+            if (stats.getWait() == 0L && stats.getSend() == 0L) {
+                if (stats.getFail() == 0L) {
                     Log.info("初始化导入数据成功！target：{}，table：{}，size：{}", initLoadInfo.getTarget(), initLoadInfo.getDataSourceConfig().getTable(), stats.getSuceess());
                     return true;
-                }else {
+                } else {
                     Log.error("初始化导入数据完成，但有部分失败！target：{}，table：{}，success：{}，fail：{}", initLoadInfo.getTarget(), initLoadInfo.getDataSourceConfig().getTable(), stats.getSuceess(), stats.getFail());
                     return false;
                 }
             }
-            if(stopWatch.getTime() > 24 * 60 * 60 * 1000L){
+            if (stopWatch.getTime() > 24 * 60 * 60 * 1000L) {
                 Log.error("初始化导入数据超时，停止等待任务完成！target：{}，table：{}，success：{}，fail：{}", initLoadInfo.getTarget(), initLoadInfo.getDataSourceConfig().getTable(), stats.getSuceess(), stats.getFail());
                 return false;
             }
@@ -387,25 +400,26 @@ public class DataLoadDao {
 
     /**
      * 获得任务
+     *
      * @param loadRecordQueue 初始化计划队列
-     * @param num 任务数量
+     * @param num             任务数量
      * @return 任务
      */
-    private List<LoadRecord> findTaskList(Deque<LoadRecord> loadRecordQueue, int num){
+    private List<LoadRecord> findTaskList(Deque<LoadRecord> loadRecordQueue, int num) {
         // 按照查询分页要求，将多个任务聚合到一起
         List<LoadRecord> loadRecordList = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
             LoadRecord loadRecord = loadRecordQueue.pollLast();
-            if(loadRecord != null){
+            if (loadRecord != null) {
 
                 // 检查分页是否连续，不连续的分页不放在同一任务组内
-                if(loadRecordList.size()>0 && loadRecordList.get(loadRecordList.size()-1).getPage()+1 != loadRecord.getPage()){
+                if (loadRecordList.size() > 0 && loadRecordList.get(loadRecordList.size() - 1).getPage() + 1 != loadRecord.getPage()) {
                     loadRecordQueue.addLast(loadRecord);
                     return loadRecordList;
-                }else {
+                } else {
                     loadRecordList.add(loadRecord);
                 }
-            }else {
+            } else {
                 return loadRecordList;
             }
         }
@@ -414,12 +428,13 @@ public class DataLoadDao {
 
     /**
      * ID 处理任务
+     *
      * @param loadRecordList 任务列表
-     * @param allRows 所有记录
-     * @param priCol 主键字段
+     * @param allRows        所有记录
+     * @param priCol         主键字段
      * @param dataLoadHandle MQ处理
      */
-    private void idTaskHandle(List<LoadRecord> loadRecordList, List<List<EventColumn>> allRows, String priCol, DataLoadHandle dataLoadHandle){
+    private void idTaskHandle(List<LoadRecord> loadRecordList, List<List<EventColumn>> allRows, String priCol, DataLoadHandle dataLoadHandle) {
         // 按MQ分页要求，重新分页
         for (int i = 0; i < loadRecordList.size(); i++) {
             LoadRecord loadRecord = loadRecordList.get(i);
@@ -450,12 +465,13 @@ public class DataLoadDao {
 
     /**
      * Limit 处理任务
+     *
      * @param loadRecordList 任务列表
-     * @param allRows 所有记录
-     * @param mqSize MQ处理数量
+     * @param allRows        所有记录
+     * @param mqSize         MQ处理数量
      * @param dataLoadHandle MQ处理
      */
-    private void limitTaskHandle(List<LoadRecord> loadRecordList, List<List<EventColumn>> allRows, int mqSize, DataLoadHandle dataLoadHandle){
+    private void limitTaskHandle(List<LoadRecord> loadRecordList, List<List<EventColumn>> allRows, int mqSize, DataLoadHandle dataLoadHandle) {
         // 按MQ分页要求，重新分页
         for (int i = 0; i < loadRecordList.size(); i++) {
             LoadRecord loadRecord = loadRecordList.get(i);
@@ -481,45 +497,49 @@ public class DataLoadDao {
 
     /**
      * 查询记录数据
+     *
      * @param dataSourceConfig 数据源
-     * @param table 表名
-     * @param start 起始行号
-     * @param size 查询数量
+     * @param table            表名
+     * @param start            起始行号
+     * @param size             查询数量
      * @return 数据记录
      */
-    private List<List<EventColumn>> queryData(SyncDataSourceConfig dataSourceConfig, String table, long start, int size){
+    private List<List<EventColumn>> queryData(SyncDataSourceConfig dataSourceConfig, String table, long start, int size) {
         return query(dataSourceConfig, String.format("select * from %s limit %d,%d", table, start, size));
     }
 
     /**
      * 查询记录数据
+     *
      * @param dataSourceConfig 数据源
-     * @param table 表名
-     * @param primaryKey 主键
-     * @param startKey 起始主键
-     * @param endKey 截止主键
+     * @param table            表名
+     * @param primaryKey       主键
+     * @param startKey         起始主键
+     * @param endKey           截止主键
      * @return 数据记录
      */
-    private List<List<EventColumn>> queryData(SyncDataSourceConfig dataSourceConfig, String table, String primaryKey, long startKey, long endKey){
+    private List<List<EventColumn>> queryData(SyncDataSourceConfig dataSourceConfig, String table, String primaryKey, long startKey, long endKey) {
         return query(dataSourceConfig, String.format("select * from %s where %s >= %d and %s < %d", table, primaryKey, startKey, primaryKey, endKey));
     }
 
     /**
      * 查询记录总数
+     *
      * @param dataSourceConfig 数据源配置
-     * @param primaryKey 主键
+     * @param primaryKey       主键
      * @return 记录总数
      */
-    private TablePageInfo queryAllDataCount(SyncDataSourceConfig dataSourceConfig, String table, String primaryKey){
+    private TablePageInfo queryAllDataCount(SyncDataSourceConfig dataSourceConfig, String table, String primaryKey) {
         return query(dataSourceConfig, String.format("select count(1), ifnull(min(%s),0), ifnull(max(%s),0) from %s", primaryKey, primaryKey, table)).stream().map(rows -> new TablePageInfo(Integer.parseInt(rows.get(0).getValue()), Long.parseLong(rows.get(1).getValue()), Long.parseLong(rows.get(2).getValue()))).findFirst().get();
     }
 
     /**
      * 查询主键
+     *
      * @param dataSourceConfig 数据源配置
      * @return <主键，是否为数字类型>
      */
-    private Optional<PriColInfo> queryPriKeys(SyncDataSourceConfig dataSourceConfig){
+    private Optional<PriColInfo> queryPriKeys(SyncDataSourceConfig dataSourceConfig) {
         SyncDataSourceConfig newSource = dataSourceConfig.copy();
         newSource.setDatabase("information_schema");
         newSource.setTable("COLUMNS");
@@ -531,33 +551,35 @@ public class DataLoadDao {
 
     /**
      * 更改已初始化状态
+     *
      * @param loadStatus 状态
      */
-    public void updateInitialized(LoadStatus loadStatus){
-        if(TYPE_ES.equals(loadStatus.getTarget())){
+    public void updateInitialized(LoadStatus loadStatus) {
+        if (TYPE_ES.equals(loadStatus.getTarget())) {
             esMappingDao.updateInitialized(loadStatus);
-        }else if(TYPE_REDIS.equals(loadStatus.getTarget())){
+        } else if (TYPE_REDIS.equals(loadStatus.getTarget())) {
             redisMappingDao.updateInitialized(loadStatus);
-        }else if(TYPE_MQ.equals(loadStatus.getTarget())){
+        } else if (TYPE_MQ.equals(loadStatus.getTarget())) {
             mqMappingDao.updateInitialized(loadStatus);
-        }else if(TYPE_MYSQL.equals(loadStatus.getTarget())){
+        } else if (TYPE_MYSQL.equals(loadStatus.getTarget())) {
             mysqlMappingDao.updateInitialized(loadStatus);
-        }else {
+        } else {
             Log.error("不支持目标类型：{}", loadStatus.getTarget());
         }
     }
 
     /**
      * 读取列值
-     * @param type 列类型
+     *
+     * @param type      列类型
      * @param resultSet 数据集
-     * @param i 列下标
+     * @param i         列下标
      * @return 列值
      * @throws SQLException
      */
     private String getColumnValue(int type, ResultSet resultSet, int i) throws SQLException {
         try {
-            switch (type){
+            switch (type) {
                 case Types.INTEGER:
                 case Types.TINYINT:
                 case Types.SMALLINT:
@@ -573,20 +595,20 @@ public class DataLoadDao {
                     return resultSet.getString(i);
                 case Types.DATE:
                     Date date = resultSet.getDate(i);
-                    return date!=null ? DateUtils.toDateString(new java.util.Date(date.getTime())) : null;
+                    return date != null ? DateUtils.toDateString(new java.util.Date(date.getTime())) : null;
                 case Types.TIME:
                     Time time = resultSet.getTime(i);
-                    return time!=null ? DateUtils.toTimeString(new java.util.Date(time.getTime())) : null;
+                    return time != null ? DateUtils.toTimeString(new java.util.Date(time.getTime())) : null;
                 case Types.TIMESTAMP:
                     Timestamp timestamp = resultSet.getTimestamp(i);
-                    return timestamp!=null ? DateUtils.toTimeString(new java.util.Date(timestamp.getTime())) : null;
+                    return timestamp != null ? DateUtils.toTimeString(new java.util.Date(timestamp.getTime())) : null;
                 case Types.CHAR:
                 case Types.VARCHAR:
                 case Types.LONGVARCHAR:
                 default:
                     return resultSet.getString(i);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.warn("读取列值异常！type：{}，i：{}，errmsg：{}", type, i, e.getMessage());
             return null;
         }
@@ -594,10 +616,11 @@ public class DataLoadDao {
 
     /**
      * 删除主键自增
-     * @param mappingId 配置ID
+     *
+     * @param mappingId  配置ID
      * @param priColInfo 主键信息
      */
-    private void removeAutoIncrement(String mappingId, PriColInfo priColInfo){
+    private void removeAutoIncrement(String mappingId, PriColInfo priColInfo) {
         MySQLSyncConfig mysqlSyncConfig = mysqlMappingDao.findById(mappingId);
         mysqlSyncConfig.getTargetDataSource().values().forEach(target -> {
             Connection conn = null;
@@ -606,17 +629,17 @@ public class DataLoadDao {
                 conn = jdbcConf.getConn(target);
                 preparedStatement = conn.prepareStatement(String.format("alter table %s modify column %s %s comment '%s'", target.getTable(), priColInfo.getCol(), priColInfo.getType(), priColInfo.getComment()));
                 preparedStatement.execute();
-            }catch (SQLException e){
+            } catch (SQLException e) {
                 Log.errorThrow("删除主键自增失败！", e);
-            }finally {
+            } finally {
                 try {
-                    if(preparedStatement!=null && !preparedStatement.isClosed()){
+                    if (preparedStatement != null && !preparedStatement.isClosed()) {
                         preparedStatement.close();
                     }
-                    if(conn!=null && !conn.isClosed()){
+                    if (conn != null && !conn.isClosed()) {
                         conn.close();
                     }
-                }catch (SQLException e){
+                } catch (SQLException e) {
                     Log.errorThrow("关闭连接时发生异常！", e);
                 }
             }
@@ -626,10 +649,11 @@ public class DataLoadDao {
 
     /**
      * 添加主键自增
-     * @param mappingId 配置ID
+     *
+     * @param mappingId  配置ID
      * @param priColInfo 主键信息
      */
-    private void addAutoIncrement(String mappingId, PriColInfo priColInfo){
+    private void addAutoIncrement(String mappingId, PriColInfo priColInfo) {
         MySQLSyncConfig mysqlSyncConfig = mysqlMappingDao.findById(mappingId);
         mysqlSyncConfig.getTargetDataSource().values().forEach(target -> {
             Connection conn = null;
@@ -638,17 +662,17 @@ public class DataLoadDao {
                 conn = jdbcConf.getConn(target);
                 preparedStatement = conn.prepareStatement(String.format("alter table %s modify column %s %s auto_increment comment '%s'", target.getTable(), priColInfo.getCol(), priColInfo.getType(), priColInfo.getComment()));
                 preparedStatement.execute();
-            }catch (SQLException e){
+            } catch (SQLException e) {
                 Log.errorThrow("添加主键自增失败！", e);
-            }finally {
+            } finally {
                 try {
-                    if(preparedStatement!=null && !preparedStatement.isClosed()){
+                    if (preparedStatement != null && !preparedStatement.isClosed()) {
                         preparedStatement.close();
                     }
-                    if(conn!=null && !conn.isClosed()){
+                    if (conn != null && !conn.isClosed()) {
                         conn.close();
                     }
-                }catch (SQLException e){
+                } catch (SQLException e) {
                     Log.errorThrow("关闭连接时发生异常！", e);
                 }
             }
