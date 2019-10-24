@@ -48,31 +48,52 @@ public class MySQLEvent {
 
     /**
      * MySQL事件
-     * @param event 事件信息
+     *
+     * @param event           事件信息
      * @param mysqlSyncConfig MySQL配置
      */
     public MySQLEvent(Event event, MySQLSyncConfig mysqlSyncConfig) {
         this.event = event;
         Option<SyncDataSourceConfig> target = getTargetDataSource(event, mysqlSyncConfig);
-        if(target.exist()){
+        if (target.exist()) {
             this.targetDataSource = target.get();
-        }else {
-            Log.errorThrow("【MySQL】提取目标数据表时发生异常！table：{}，id：{}，errmsg：{}", mysqlSyncConfig.getSourceTable(), event.getPrimaryKey(), target.error()?target.getErrmsg():"");
+        } else {
+            Log.errorThrow("【MySQL】提取目标数据表时发生异常！table：{}，id：{}，errmsg：{}", mysqlSyncConfig.getSourceTable(), event.getPrimaryKey(), target.error() ? target.getErrmsg() : "");
+        }
+    }
+
+    /**
+     * 判断是否为数字类型
+     *
+     * @param type 列类型
+     * @return 是否为数字类型
+     */
+    private static boolean isInt(int type) {
+        switch (type) {
+            case Types.INTEGER:
+            case Types.TINYINT:
+            case Types.SMALLINT:
+            case Types.BIT:
+            case Types.BIGINT:
+                return true;
+            default:
+                return false;
         }
     }
 
     /**
      * 获得目标数据源
-     * @param event 事件信息
+     *
+     * @param event           事件信息
      * @param mysqlSyncConfig MySQL配置
      * @return 目标数据源
      */
-    public Option<SyncDataSourceConfig> getTargetDataSource(Event event, MySQLSyncConfig mysqlSyncConfig){
+    public Option<SyncDataSourceConfig> getTargetDataSource(Event event, MySQLSyncConfig mysqlSyncConfig) {
 
-        if(mysqlSyncConfig.isSharding()) {
+        if (mysqlSyncConfig.isSharding()) {
             // 分表字段
             Optional<EventColumn> shardingCol = event.getAllColumns().stream().filter(e -> e.getName().equals(mysqlSyncConfig.getShardingCol())).findFirst();
-            if(!shardingCol.isPresent()){
+            if (!shardingCol.isPresent()) {
                 Log.error("分表字段不存在！table：{}，column：{}", mysqlSyncConfig.getSourceTable(), mysqlSyncConfig.getShardingCol());
                 return Option.empty();
             }
@@ -84,47 +105,30 @@ public class MySQLEvent {
             } else {
                 return Option.empty();
             }
-        }else {
+        } else {
             return Option.of(mysqlSyncConfig.getTargetDataSource().values().stream().findFirst());
         }
     }
 
     /**
      * 计算分片
+     *
      * @param shardingCol 分片字段
-     * @param num 分片数量
+     * @param num         分片数量
      * @return 分片序号
      */
-    private long sharding(EventColumn shardingCol, int num){
+    private long sharding(EventColumn shardingCol, int num) {
         // 计算分片
-        long shardingValue = shardingCol.getValue()!=null?
+        long shardingValue = shardingCol.getValue() != null ?
                 (isInt(shardingCol.getSqlType()) ?
                         // 整数取值
                         Long.parseLong(shardingCol.getValue()) :
                         // 字符串，小数取hash值
                         Objects.hashCode(shardingCol.getValue()) & Integer.MAX_VALUE)
-                :0L;
+                : 0L;
         // 根据分片数取模
         long shardingIndex = shardingValue % num;
         return shardingIndex;
-    }
-
-    /**
-     * 判断是否为数字类型
-     * @param type 列类型
-     * @return 是否为数字类型
-     */
-    private static boolean isInt(int type) {
-        switch (type){
-            case Types.INTEGER:
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.BIT:
-            case Types.BIGINT:
-                return true;
-            default:
-                return false;
-        }
     }
 
 }

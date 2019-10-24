@@ -25,7 +25,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 import static com.kaishustory.leafant.common.constants.EventConstants.*;
 
@@ -58,12 +59,13 @@ public class MqTransformService {
 
     /**
      * MQ事件转发处理
+     *
      * @param events MQ事件列表
      */
     @SneakyThrows
-    public void eventHandle(MqSyncConfig config, List<Event> events){
+    public void eventHandle(MqSyncConfig config, List<Event> events) {
 
-        if(events!=null && events.size()>0) {
+        if (events != null && events.size() > 0) {
 
             Event e = events.get(0);
             // 立即处理
@@ -86,12 +88,12 @@ public class MqTransformService {
             );
             // 逐条打印日志
             events.forEach(event -> {
-                if(TYPE_INSERT == event.getType()){
-                    Log.info("【MQ】新增文档 {}, id：{}，delay：{}，insert：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime())+"/ms" , JsonUtils.toJson(event.getUpdateColumnsBase()));
-                } else if(TYPE_UPDATE == event.getType()){
-                    Log.info("【MQ】更新文档 {}, id：{}，delay：{}，update：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime())+"/ms" , JsonUtils.toJson(event.getUpdateColumnsBase()));
-                } else if(TYPE_DELETE == event.getType()){
-                    Log.info("【MQ】删除文档 {}, id：{}，delay：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime())+"/ms");
+                if (TYPE_INSERT == event.getType()) {
+                    Log.info("【MQ】新增文档 {}, id：{}，delay：{}，insert：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms", JsonUtils.toJson(event.getUpdateColumnsBase()));
+                } else if (TYPE_UPDATE == event.getType()) {
+                    Log.info("【MQ】更新文档 {}, id：{}，delay：{}，update：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms", JsonUtils.toJson(event.getUpdateColumnsBase()));
+                } else if (TYPE_DELETE == event.getType()) {
+                    Log.info("【MQ】删除文档 {}, id：{}，delay：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms");
                 }
             });
 

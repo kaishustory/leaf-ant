@@ -55,16 +55,17 @@ public class RedisQueryService {
 
     /**
      * 批量查询Redis内容
+     *
      * @param redisDataSourceConfig redis配置
-     * @param keys Key列表
+     * @param keys                  Key列表
      * @return Redis 内容 <RedisKey,列信息>
      */
-    private Map<String,EventColumn[]> findKeyValues(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, List<String> keys){
+    private Map<String, EventColumn[]> findKeyValues(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, List<String> keys) {
 
         // 批量查询
         List<String> values = redisDao.multGet(redisDataSourceConfig, keys);
 
-        Map<String,EventColumn[]> keyValues = new HashMap<>(keys.size());
+        Map<String, EventColumn[]> keyValues = new HashMap<>(keys.size());
         for (int i = 0; i < keys.size(); i++) {
             keyValues.put(keys.get(i), JsonUtils.fromJson(values.get(i), EventColumn[].class));
         }
@@ -73,50 +74,54 @@ public class RedisQueryService {
 
     /**
      * 批量查询Redis内容
+     *
      * @param mappingId Redis映射ID
-     * @param keys Key列表
+     * @param keys      Key列表
      * @return Redis 内容 <RedisKey,列信息>
      */
-    public Map<String,EventColumn[]> findKeyValues(String mappingId, List<String> keys){
+    public Map<String, EventColumn[]> findKeyValues(String mappingId, List<String> keys) {
         RedisSyncConfig redisSyncConfig = findById(mappingId);
         return findKeyValues(redisSyncConfig.getRedisDataSourceConfig(), keys);
     }
 
     /**
      * 查询Redis内容
+     *
      * @param redisDataSourceConfig redis配置
-     * @param key key
+     * @param key                   key
      * @return Redis 内容
      */
-    public EventColumn[] findValue(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig,String key){
+    public EventColumn[] findValue(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, String key) {
         String value = redisDao.get(redisDataSourceConfig, key);
-        if(value!=null) {
+        if (value != null) {
             // 查询
             return JsonUtils.fromJson(value, EventColumn[].class);
-        }else {
+        } else {
             return new EventColumn[0];
         }
     }
 
     /**
      * 查询Redis内容
+     *
      * @param mappingId Redis映射ID
-     * @param key key
+     * @param key       key
      * @return Redis 内容
      */
-    public EventColumn[] findValue(String mappingId, String key){
+    public EventColumn[] findValue(String mappingId, String key) {
         // 查询
         return findValue(findById(mappingId).getRedisDataSourceConfig(), key);
     }
 
     /**
      * 查询Redis映射信息
+     *
      * @param mappingId 映射ID
      * @return Redis映射信息
      */
-    public RedisSyncConfig findById(String mappingId){
+    public RedisSyncConfig findById(String mappingId) {
         RedisSyncConfig redisSyncConfig = redisMapping2Cache.get(mappingId, s -> null);
-        if(redisSyncConfig==null){
+        if (redisSyncConfig == null) {
             redisSyncConfig = redisMappingDao.findById(mappingId);
             redisMapping2Cache.put(mappingId, redisSyncConfig);
         }

@@ -34,23 +34,23 @@ import java.util.List;
 public class RedisDao {
 
     /**
+     * 批量执行分页条数
+     */
+    private final int pageSize = 100;
+    /**
      * Redis
      */
     @Autowired
     private RedisConf redisConf;
 
     /**
-     * 批量执行分页条数
-     */
-    private final int pageSize = 100;
-
-    /**
      * 读取内容
+     *
      * @param redisDataSourceConfig redis配置
-     * @param key key
+     * @param key                   key
      * @return 内容
      */
-    public String get(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, String key){
+    public String get(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, String key) {
         // 获得连接
         StringRedisTemplate redisTemplate = redisConf.getConnection(redisDataSourceConfig.getRedisAddr(), redisDataSourceConfig.getPassword(), redisDataSourceConfig.getDatabase());
         return redisTemplate.opsForValue().get(key);
@@ -58,11 +58,12 @@ public class RedisDao {
 
     /**
      * 批量读取内容
+     *
      * @param redisDataSourceConfig redis配置
-     * @param keys key列表
+     * @param keys                  key列表
      * @return 内容列表
      */
-    public List<String> multGet(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, List<String> keys){
+    public List<String> multGet(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, List<String> keys) {
         // 获得连接
         StringRedisTemplate redisTemplate = redisConf.getConnection(redisDataSourceConfig.getRedisAddr(), redisDataSourceConfig.getPassword(), redisDataSourceConfig.getDatabase());
         return redisTemplate.opsForValue().multiGet(keys);
@@ -70,11 +71,12 @@ public class RedisDao {
 
     /**
      * 单条写入内容
+     *
      * @param redisDataSourceConfig redis配置
-     * @param key key
-     * @param value value
+     * @param key                   key
+     * @param value                 value
      */
-    public void save(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, String key, String value){
+    public void save(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, String key, String value) {
         // 获得连接
         StringRedisTemplate redisTemplate = redisConf.getConnection(redisDataSourceConfig.getRedisAddr(), redisDataSourceConfig.getPassword(), redisDataSourceConfig.getDatabase());
         redisTemplate.opsForValue().set(key, value);
@@ -82,21 +84,22 @@ public class RedisDao {
 
     /**
      * 批量处理
+     *
      * @param redisDataSourceConfig Redis配置
-     * @param params 参数列表
-     * @param redisHandle Redis处理
+     * @param params                参数列表
+     * @param redisHandle           Redis处理
      * @return 执行结果
      */
-    public <T> List<Object> batch(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, List<T> params, RedisHandle redisHandle){
+    public <T> List<Object> batch(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, List<T> params, RedisHandle redisHandle) {
         // 获得连接
         StringRedisTemplate redisTemplate = redisConf.getConnection(redisDataSourceConfig.getRedisAddr(), redisDataSourceConfig.getPassword(), redisDataSourceConfig.getDatabase());
         List<Object> allResults = new ArrayList<>();
         try {
             // 执行批处理
-            redisTemplate.execute((RedisCallback<Object>) redisConnection  -> {
+            redisTemplate.execute((RedisCallback<Object>) redisConnection -> {
                 long total = params.size();
                 // 分页处理
-                for (int page = 0; page < Math.ceil(total/ (double) pageSize); page++) {
+                for (int page = 0; page < Math.ceil(total / (double) pageSize); page++) {
                     redisConnection.openPipeline();
                     params.stream().skip(page * pageSize).limit(pageSize).forEach(param -> {
                         // Redis处理
@@ -107,13 +110,13 @@ public class RedisDao {
                 return null;
             });
 //            Log.info("Redis批处理成功！redis：{}，database：{}", redisDataSourceConfig.getRedisAddr(), redisDataSourceConfig.getDatabase());
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("Redis批处理失败！redis：{}，database：{}", redisDataSourceConfig.getRedisAddr(), redisDataSourceConfig.getDatabase(), e);
         }
         return allResults;
     }
 
-    public interface RedisHandle<T>{
+    public interface RedisHandle<T> {
         void handle(RedisConnection connection, T param);
     }
 }

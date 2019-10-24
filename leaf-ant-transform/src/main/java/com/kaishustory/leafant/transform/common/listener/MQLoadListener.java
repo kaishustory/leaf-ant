@@ -65,7 +65,7 @@ public class MQLoadListener {
      * 创建MQ消费者
      */
     @Bean
-    public MQPushConsumer createLoadMqConsumer(@Value("${mq.load.groupId}") String group, @Value("${mq.load.topic}") String topic, @Value("${mq.addr}") String addr){
+    public MQPushConsumer createLoadMqConsumer(@Value("${mq.load.groupId}") String group, @Value("${mq.load.topic}") String topic, @Value("${mq.addr}") String addr) {
 
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(group);
         try {
@@ -81,14 +81,14 @@ public class MQLoadListener {
                         try {
                             String body = new String(message.getBody());
                             Event[] events = JsonUtils.fromJson(body, Event[].class);
-                            Log.info("收到初始化MQ消息：{}，Size：{}", mqid, events==null ? 0 : events.length);
+                            Log.info("收到初始化MQ消息：{}，Size：{}", mqid, events == null ? 0 : events.length);
                             try {
                                 eventRouteService.route(events);
 
-                                Log.info("初始化MQ消息处理成功：{}，Size：{}", mqid, events==null ? 0 : events.length);
+                                Log.info("初始化MQ消息处理成功：{}，Size：{}", mqid, events == null ? 0 : events.length);
                                 // 更新初始化成功
                                 loadRecordDao.updateRecordSuccessByMqid(mqid);
-                            }catch (Exception e){
+                            } catch (Exception e) {
                                 Log.error(String.format("MQ消息处理异常，将任务转为单条处理模式！%s", mqid), e);
 
                                 // 更新初始化失败
@@ -99,19 +99,19 @@ public class MQLoadListener {
                                 Arrays.stream(Objects.requireNonNull(events)).forEach(event -> {
                                     try {
                                         eventRouteService.route(event);
-                                    }catch (Exception e1){
+                                    } catch (Exception e1) {
                                         errcount.getAndIncrement();
                                         Log.error(String.format("MQ消息处理异常！%s，table：%s，type：%s，id：%s", mqid, event.getTableKey(), event.getTypeName(), event.getPrimaryKey()), e1);
                                     }
                                 });
-                                if(errcount.intValue() == 0){
-                                    Log.info("初始化MQ消息处理成功：{}，Size：{}", mqid, events==null ? 0 : events.length);
+                                if (errcount.intValue() == 0) {
+                                    Log.info("初始化MQ消息处理成功：{}，Size：{}", mqid, events == null ? 0 : events.length);
                                     // 更新初始化成功
                                     loadRecordDao.updateRecordSuccessByMqid(mqid);
                                 }
                             }
 
-                        }catch (Exception t){
+                        } catch (Exception t) {
                             // 更新初始化失败
                             loadRecordDao.updateRecordFailByMqid(mqid, t.getMessage());
                             Log.error(String.format("初始化MQ消息处理异常！%s", mqid), t);
@@ -121,7 +121,7 @@ public class MQLoadListener {
                 }
             });
             consumer.start();
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("创建MQ监听失败！", e);
         }
         return consumer;

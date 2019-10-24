@@ -36,12 +36,29 @@ public class EsMapping {
      */
     private LinkedHashMap<String, MappingProperty> properties = new LinkedHashMap<>();
 
+    @Override
+    public String toString() {
+        return JsonUtils.toJson(this);
+    }
 
     /**
      * 索引字段
      */
     @Data
-    public static class MappingProperty{
+    public static class MappingProperty {
+
+        /**
+         * 属性类型（keyword：文本不分词，text：文本分词）
+         */
+        private String type;
+        /**
+         * 索引类型（true：索引，false：不索引）
+         */
+        private String index;
+        /**
+         * 日期格式
+         */
+        private String format;
 
         public MappingProperty() {
         }
@@ -49,30 +66,10 @@ public class EsMapping {
         public MappingProperty(String type, String index) {
             this.type = type;
             this.index = index;
-            if("date".equals(type)){
+            if ("date".equals(type)) {
                 format = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis";
             }
         }
 
-        /**
-         * 属性类型（keyword：文本不分词，text：文本分词）
-         */
-        private String type;
-
-        /**
-         * 索引类型（true：索引，false：不索引）
-         */
-        private String index;
-
-        /**
-         * 日期格式
-         */
-        private String format;
-
-    }
-
-    @Override
-    public String toString() {
-        return JsonUtils.toJson(this);
     }
 }

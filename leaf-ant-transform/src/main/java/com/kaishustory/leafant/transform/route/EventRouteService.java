@@ -92,84 +92,84 @@ public class EventRouteService {
     private MySQLTransformService mysqlTransformService;
 
 
-
     /**
      * 事件路由转发
+     *
      * @param allEventList 事件列表
      */
-    public void route(Event... allEventList){
+    public void route(Event... allEventList) {
 
         // 按 数据库实例+数据库+表名+来源，分组处理
         Arrays.stream(allEventList).collect(Collectors.groupingBy(e -> String.format("%s_%s_%s_%s", e.getServer(), e.getDatabase(), e.getTable(), e.getSource()))).values()
-            .forEach(eventList -> {
-            if(eventList!=null && eventList.size()>0){
-                Event e = eventList.get(0);
+                .forEach(eventList -> {
+                    if (eventList != null && eventList.size() > 0) {
+                        Event e = eventList.get(0);
 
-                /** Redis数据转换处理 **/
-                if(SOURCE_CANAL.equals(e.getSource()) || (SOURCE_INIT.equals(e.getSource()) && TYPE_REDIS.equals(e.getTarget()))){
-                    // 查询事件是否有同步映射配置
-                    Option<List<RedisSyncConfig>> redisMappingList = redisMappingCache.getMapping(e.getServer(), e.getDatabase(), e.getTable());
-                    if (redisMappingList.exist()) {
-                        redisMappingList.get().stream()
-                        // 初始化事件，只执行指定映射
-                        .filter(mapping -> (!SOURCE_INIT.equals(e.getSource()) || mapping.getId().equals(e.getMappingId())))
-                        .forEach(mapping -> {
-                            // Redis事件处理
-                            redisTransformService.eventHandle(mapping.getRedisDataSourceConfig(), eventList.stream().map(event -> new RedisEvent(event, mapping)).collect(Collectors.toList()));
-                        });
-                    }
-                }
-
-                /** ElasticSearch数据转换处理 **/
-                if(SOURCE_CANAL.equals(e.getSource()) || (SOURCE_INIT.equals(e.getSource()) && TYPE_ES.equals(e.getTarget()))){
-                    // 查询事件是否有同步映射配置
-                    Option<List<EsSyncMappingTable>> esMappingList = SOURCE_INIT.equals(e.getSource())?
-                            esMappingCache.getMapping(e.getMappingId(), e.getTable()) :
-                            esMappingCache.getMapping(e.getServer(), e.getDatabase(), e.getTable());
-                    if(esMappingList.exist()){
-                        esMappingList.get().forEach(mapping -> {
-                            if(mapping.isMult()){
-                                // ES多表事件处理
-                                esTransformService.multEventHandle(mapping.getEsAddr(), eventList.stream().map(event -> new EsEvent(event, mapping)).collect(Collectors.toList()), e.getSource());
-                            }else {
-                                // ES单表事件处理
-                                esTransformService.singleEventHandle(mapping.getEsAddr(), eventList.stream().map(event -> new EsEvent(event, mapping)).collect(Collectors.toList()), e.getSource());
+                        /** Redis数据转换处理 **/
+                        if (SOURCE_CANAL.equals(e.getSource()) || (SOURCE_INIT.equals(e.getSource()) && TYPE_REDIS.equals(e.getTarget()))) {
+                            // 查询事件是否有同步映射配置
+                            Option<List<RedisSyncConfig>> redisMappingList = redisMappingCache.getMapping(e.getServer(), e.getDatabase(), e.getTable());
+                            if (redisMappingList.exist()) {
+                                redisMappingList.get().stream()
+                                        // 初始化事件，只执行指定映射
+                                        .filter(mapping -> (!SOURCE_INIT.equals(e.getSource()) || mapping.getId().equals(e.getMappingId())))
+                                        .forEach(mapping -> {
+                                            // Redis事件处理
+                                            redisTransformService.eventHandle(mapping.getRedisDataSourceConfig(), eventList.stream().map(event -> new RedisEvent(event, mapping)).collect(Collectors.toList()));
+                                        });
                             }
-                        });
-                    }
-                }
+                        }
 
-                /** MySQL数据转换处理 **/
-                if(SOURCE_CANAL.equals(e.getSource()) || (SOURCE_INIT.equals(e.getSource()) && TYPE_MYSQL.equals(e.getTarget()))){
-                    // 查询事件是否有同步映射配置
-                    Option<List<MySQLSyncConfig>> mysqlMappingList = mysqlMappingCache.getMapping(e.getServer(), e.getDatabase(), e.getTable());
-                    if(mysqlMappingList.exist()){
-                        mysqlMappingList.get().stream()
-                        // 初始化事件，只执行指定映射
-                        .filter(mapping -> (!SOURCE_INIT.equals(e.getSource()) || mapping.getId().equals(e.getMappingId())))
-                        .forEach(mapping -> {
-                            // MySQL事件处理
-                            mysqlTransformService.eventHandle(eventList.stream().map(event -> new MySQLEvent(event, mapping)).collect(Collectors.toList()));
-                        });
-                    }
-                }
-
-                /** MQ数据转换处理 **/
-                if(SOURCE_CANAL.equals(e.getSource()) || (SOURCE_INIT.equals(e.getSource()) && TYPE_MQ.equals(e.getTarget()))){
-                    Option<List<MqSyncConfig>> mqMappingList = mqMappingCache.getMapping(e.getServer(), e.getDatabase(), e.getTable());
-                    if (mqMappingList.exist()) {
-                        mqMappingList.get().stream()
-                                // 初始化事件，只执行指定映射
-                                .filter(mapping -> (!SOURCE_INIT.equals(e.getSource()) || mapping.getId().equals(e.getMappingId())))
-                                .forEach(mapping -> {
-                                    // MQ事件处理
-                                    mqTransformService.eventHandle(mapping, eventList);
+                        /** ElasticSearch数据转换处理 **/
+                        if (SOURCE_CANAL.equals(e.getSource()) || (SOURCE_INIT.equals(e.getSource()) && TYPE_ES.equals(e.getTarget()))) {
+                            // 查询事件是否有同步映射配置
+                            Option<List<EsSyncMappingTable>> esMappingList = SOURCE_INIT.equals(e.getSource()) ?
+                                    esMappingCache.getMapping(e.getMappingId(), e.getTable()) :
+                                    esMappingCache.getMapping(e.getServer(), e.getDatabase(), e.getTable());
+                            if (esMappingList.exist()) {
+                                esMappingList.get().forEach(mapping -> {
+                                    if (mapping.isMult()) {
+                                        // ES多表事件处理
+                                        esTransformService.multEventHandle(mapping.getEsAddr(), eventList.stream().map(event -> new EsEvent(event, mapping)).collect(Collectors.toList()), e.getSource());
+                                    } else {
+                                        // ES单表事件处理
+                                        esTransformService.singleEventHandle(mapping.getEsAddr(), eventList.stream().map(event -> new EsEvent(event, mapping)).collect(Collectors.toList()), e.getSource());
+                                    }
                                 });
+                            }
+                        }
 
+                        /** MySQL数据转换处理 **/
+                        if (SOURCE_CANAL.equals(e.getSource()) || (SOURCE_INIT.equals(e.getSource()) && TYPE_MYSQL.equals(e.getTarget()))) {
+                            // 查询事件是否有同步映射配置
+                            Option<List<MySQLSyncConfig>> mysqlMappingList = mysqlMappingCache.getMapping(e.getServer(), e.getDatabase(), e.getTable());
+                            if (mysqlMappingList.exist()) {
+                                mysqlMappingList.get().stream()
+                                        // 初始化事件，只执行指定映射
+                                        .filter(mapping -> (!SOURCE_INIT.equals(e.getSource()) || mapping.getId().equals(e.getMappingId())))
+                                        .forEach(mapping -> {
+                                            // MySQL事件处理
+                                            mysqlTransformService.eventHandle(eventList.stream().map(event -> new MySQLEvent(event, mapping)).collect(Collectors.toList()));
+                                        });
+                            }
+                        }
+
+                        /** MQ数据转换处理 **/
+                        if (SOURCE_CANAL.equals(e.getSource()) || (SOURCE_INIT.equals(e.getSource()) && TYPE_MQ.equals(e.getTarget()))) {
+                            Option<List<MqSyncConfig>> mqMappingList = mqMappingCache.getMapping(e.getServer(), e.getDatabase(), e.getTable());
+                            if (mqMappingList.exist()) {
+                                mqMappingList.get().stream()
+                                        // 初始化事件，只执行指定映射
+                                        .filter(mapping -> (!SOURCE_INIT.equals(e.getSource()) || mapping.getId().equals(e.getMappingId())))
+                                        .forEach(mapping -> {
+                                            // MQ事件处理
+                                            mqTransformService.eventHandle(mapping, eventList);
+                                        });
+
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
 
     }
 

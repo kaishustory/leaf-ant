@@ -35,7 +35,7 @@ public class RocketMQProducer {
      */
     @Primary
     @Bean("forwardTopic")
-    public MQProducer createProducer(@Value("${mq.sync.groupId}") String group, @Value("${mq.addr}") String addr){
+    public MQProducer createProducer(@Value("${mq.sync.groupId}") String group, @Value("${mq.addr}") String addr) {
         try {
             DefaultMQProducer producer = new DefaultMQProducer(group);
             producer.setNamesrvAddr(addr);

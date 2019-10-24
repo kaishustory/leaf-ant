@@ -29,7 +29,7 @@ import static com.kaishustory.leafant.common.constants.EventConstants.TYPE_DELET
  * @create 2019-09-09 14:52
  **/
 @Service
-public class MySQLTransformService{
+public class MySQLTransformService {
 
     /**
      * MySQL Dao
@@ -39,19 +39,20 @@ public class MySQLTransformService{
 
     /**
      * 事件转换处理
+     *
      * @param eventList 事件列表
      */
-    public void eventHandle(List<MySQLEvent> eventList){
+    public void eventHandle(List<MySQLEvent> eventList) {
 
         // 按目标数据源分组
         eventList.stream().collect(Collectors.groupingBy(MySQLEvent::getTargetDataSource)).forEach((target, targetGroupEvent) -> {
             // 按操作类型分组
             targetGroupEvent.stream().collect(Collectors.groupingBy(e -> e.getEvent().getType() == TYPE_DELETE)).forEach((isDel, events) -> {
-                if(!isDel){
+                if (!isDel) {
                     /** 新增、修改处理 **/
                     mysqlDao.batchUpdate(target, events);
 
-                }else {
+                } else {
                     /** 删除处理 **/
                     mysqlDao.batchDelete(target, events);
                 }

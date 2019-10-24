@@ -45,9 +45,33 @@ public class MySQLDao {
     private JdbcConf jdbcConf;
 
     /**
+     * 判断是否为数字类型
+     *
+     * @param type 列类型
+     * @return 是否为数字类型
+     */
+    public static boolean isNum(int type) {
+        switch (type) {
+            case Types.INTEGER:
+            case Types.TINYINT:
+            case Types.SMALLINT:
+            case Types.BIT:
+            case Types.BIGINT:
+            case Types.FLOAT:
+            case Types.DOUBLE:
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
      * 批量更新操作
+     *
      * @param targetDataSourceConfig 目标数据源
-     * @param events 事件列表
+     * @param events                 事件列表
      */
     public void batchUpdate(SyncDataSourceConfig targetDataSourceConfig, List<MySQLEvent> events) {
         Connection mysqlConn = null;
@@ -58,7 +82,7 @@ public class MySQLDao {
             mysqlConn = jdbcConf.getConn(targetDataSourceConfig);
             List<EventColumn> simlpeCols = events.get(0).getEvent().getAllColumns();
             // 生产执行语句
-            String sql = String.format("LOAD DATA CONCURRENT LOCAL INFILE 'sql.csv' REPLACE INTO TABLE %s CHARACTER SET utf8mb4 FIELDS TERMINATED BY ' +o.o+ ' LINES TERMINATED BY ';xox\\n' (%s)", targetDataSourceConfig.getTable(), simlpeCols.stream().map(EventColumn::getName).reduce((a,b) -> a+","+b).get());
+            String sql = String.format("LOAD DATA CONCURRENT LOCAL INFILE 'sql.csv' REPLACE INTO TABLE %s CHARACTER SET utf8mb4 FIELDS TERMINATED BY ' +o.o+ ' LINES TERMINATED BY ';xox\\n' (%s)", targetDataSourceConfig.getTable(), simlpeCols.stream().map(EventColumn::getName).reduce((a, b) -> a + "," + b).get());
             mysqlStatm = mysqlConn.prepareStatement(sql).unwrap(com.mysql.jdbc.PreparedStatement.class);
             // 写入数据
             mysqlStatm.setLocalInfileInputStream(getMySQLInputStream(simlpeCols, events));
@@ -68,20 +92,20 @@ public class MySQLDao {
                     Log.info("【MySQL】批量更新成功！rds：{}，database：{}，table：{}，id：{}，update：{}", targetDataSourceConfig.getRds(), targetDataSourceConfig.getDatabase(), targetDataSourceConfig.getTable(), event.getEvent().getPrimaryKey(), event.getEvent().getUpdateColumnsBase())
             );
             time.end();
-        }catch (Exception e){
+        } catch (Exception e) {
             events.forEach(event ->
                     Log.error("【MySQL】批量更新失败记录！rds：{}，database：{}，table：{}，id：{}，update：{}", targetDataSourceConfig.getRds(), targetDataSourceConfig.getDatabase(), targetDataSourceConfig.getTable(), event.getEvent().getPrimaryKey(), event.getEvent().getUpdateColumnsBase())
             );
             Log.errorThrow("【MySQL】批量更新异常！rds：{}，database：{}，table：{}，size：{}，err：{}", targetDataSourceConfig.getRds(), targetDataSourceConfig.getDatabase(), targetDataSourceConfig.getTable(), events.size(), e.getMessage(), e);
-        }finally {
+        } finally {
             try {
-                if(mysqlStatm!=null && !mysqlStatm.isClosed()){
+                if (mysqlStatm != null && !mysqlStatm.isClosed()) {
                     mysqlStatm.close();
                 }
-                if(mysqlConn!=null && !mysqlConn.isClosed()){
+                if (mysqlConn != null && !mysqlConn.isClosed()) {
                     mysqlConn.close();
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 Log.error("关闭MySQL连接时发生异常！", e);
             }
         }
@@ -89,10 +113,11 @@ public class MySQLDao {
 
     /**
      * 批量删除操作
+     *
      * @param targetDataSourceConfig 目标数据源
-     * @param events 事件列表
+     * @param events                 事件列表
      */
-    public void batchDelete(SyncDataSourceConfig targetDataSourceConfig, List<MySQLEvent> events){
+    public void batchDelete(SyncDataSourceConfig targetDataSourceConfig, List<MySQLEvent> events) {
         Connection mysqlConn = null;
         PreparedStatement mysqlStatm = null;
         try {
@@ -109,7 +134,7 @@ public class MySQLDao {
                     // 主键值
                     events.stream()
                             .map(event -> isNum(pri.getSqlType()) ? event.getEvent().getPrimaryKey() : String.format("'%s'", event.getEvent().getPrimaryKey()))
-                            .reduce((a,b) -> a+","+b).get()
+                            .reduce((a, b) -> a + "," + b).get()
             )).unwrap(com.mysql.jdbc.PreparedStatement.class);
             // 执行命令
             mysqlStatm.execute();
@@ -117,20 +142,20 @@ public class MySQLDao {
                     Log.info("【MySQL】批量删除成功！rds：{}，database：{}，table：{}，id：{}", targetDataSourceConfig.getRds(), targetDataSourceConfig.getDatabase(), targetDataSourceConfig.getTable(), event.getEvent().getPrimaryKey())
             );
             time.end();
-        }catch (Exception e){
+        } catch (Exception e) {
             events.forEach(event ->
                     Log.error("【MySQL】批量删除失败记录！rds：{}，database：{}，table：{}，id：{}", targetDataSourceConfig.getRds(), targetDataSourceConfig.getDatabase(), targetDataSourceConfig.getTable(), event.getEvent().getPrimaryKey())
             );
             Log.errorThrow("【MySQL】批量删除异常！rds：{}，database：{}，table：{}，size：{}", targetDataSourceConfig.getRds(), targetDataSourceConfig.getDatabase(), targetDataSourceConfig.getTable(), events.size(), e);
-        }finally {
+        } finally {
             try {
-                if(mysqlStatm!=null && !mysqlStatm.isClosed()){
+                if (mysqlStatm != null && !mysqlStatm.isClosed()) {
                     mysqlStatm.close();
                 }
-                if(mysqlConn!=null && !mysqlConn.isClosed()){
+                if (mysqlConn != null && !mysqlConn.isClosed()) {
                     mysqlConn.close();
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 Log.error("关闭MySQL连接时发生异常！", e);
             }
         }
@@ -138,10 +163,11 @@ public class MySQLDao {
 
     /**
      * 获得输入流
+     *
      * @param events 事件列表
      * @return 输入流
      */
-    private InputStream getMySQLInputStream(List<EventColumn> simlpeCols, List<MySQLEvent> events){
+    private InputStream getMySQLInputStream(List<EventColumn> simlpeCols, List<MySQLEvent> events) {
 
         String fieldSQ = " +o.o+ ";
         String lineSQ = ";xox\n";
@@ -151,40 +177,18 @@ public class MySQLDao {
                 events.stream().map(event ->
                                 simlpeCols.stream().map(EventColumn::getName).map(col -> {
                                     Optional<EventColumn> column = event.getEvent().getAllColumns().stream().filter(eventColumn -> eventColumn.getName().equals(col)).findFirst();
-                                    if(column.isPresent() && column.get().getValue()!=null){
+                                    if (column.isPresent() && column.get().getValue() != null) {
                                         // 提取字段内容
-                                        return column.get().getValue().replace(fieldSQ,"").replace(lineSQ,"");
-                                    }else {
+                                        return column.get().getValue().replace(fieldSQ, "").replace(lineSQ, "");
+                                    } else {
                                         // 空内容
                                         return nullSQ;
                                     }
                                     // 字段分隔
-                                }).reduce((a,b) -> a + fieldSQ + b).get()
+                                }).reduce((a, b) -> a + fieldSQ + b).get()
                         // 行分隔
-                ).reduce((a,b) -> a + lineSQ + b).get().getBytes()
+                ).reduce((a, b) -> a + lineSQ + b).get().getBytes()
         );
 
-    }
-
-    /**
-     * 判断是否为数字类型
-     * @param type 列类型
-     * @return 是否为数字类型
-     */
-    public static boolean isNum(int type) {
-        switch (type){
-            case Types.INTEGER:
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.BIT:
-            case Types.BIGINT:
-            case Types.FLOAT:
-            case Types.DOUBLE:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-                return true;
-            default:
-                return false;
-        }
     }
 }

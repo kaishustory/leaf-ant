@@ -69,42 +69,49 @@ public class EsTransformService {
 
     /**
      * ElasticSearch同步事件处理（单表事件处理）
-     * @param esAddr ElasticSearch地址
+     *
+     * @param esAddr   ElasticSearch地址
      * @param esEvents 事件列表
-     * @param source 来源（canal：数据变更事件，init：数据初始化）
+     * @param source   来源（canal：数据变更事件，init：数据初始化）
      */
-    public void singleEventHandle(String esAddr, List<EsEvent> esEvents, String source){
+    public void singleEventHandle(String esAddr, List<EsEvent> esEvents, String source) {
 
         EsEvent esEvent = esEvents.get(0);
         // 批量命令
         elasticSearchDao.bulk(esAddr, esEvent.getMapping().getIndex(), esEvent.getMapping().getType(),
-            esEvents.stream().map(event -> {
-                // 事件转换处理
-                switch (event.getEvent().getType()){
+                esEvents.stream().map(event -> {
+                    // 事件转换处理
+                    switch (event.getEvent().getType()) {
 
-                    /** 新增操作 **/
-                    case EventConstants.TYPE_INSERT: return addAll(event, source);
+                        /** 新增操作 **/
+                        case EventConstants.TYPE_INSERT:
+                            return addAll(event, source);
 
-                    /** 修改操作 **/
-                    case EventConstants.TYPE_UPDATE: return updateAll(event);
+                        /** 修改操作 **/
+                        case EventConstants.TYPE_UPDATE:
+                            return updateAll(event);
 
-                    /** 删除操作 **/
-                    case EventConstants.TYPE_DELETE: return deleteAll(event);
+                        /** 删除操作 **/
+                        case EventConstants.TYPE_DELETE:
+                            return deleteAll(event);
 
-                    default: Log.error("未知事件类型。type：{}", event.getEvent().getType()); return null;
+                        default:
+                            Log.error("未知事件类型。type：{}", event.getEvent().getType());
+                            return null;
 
-                }
-            }).filter(Objects::nonNull).collect(Collectors.toList())
+                    }
+                }).filter(Objects::nonNull).collect(Collectors.toList())
         );
     }
 
     /**
      * ElasticSearch同步事件处理（多表事件处理）
-     * @param esAddr ElasticSearch地址
+     *
+     * @param esAddr   ElasticSearch地址
      * @param esEvents 事件列表
-     * @param source 来源（canal：数据变更事件，init：数据初始化）
+     * @param source   来源（canal：数据变更事件，init：数据初始化）
      */
-    public void multEventHandle(String esAddr, List<EsEvent> esEvents, String source){
+    public void multEventHandle(String esAddr, List<EsEvent> esEvents, String source) {
 
         EsEvent esEvent = esEvents.get(0);
 
@@ -145,72 +152,78 @@ public class EsTransformService {
                         return deleteChild(event);
                     }
                 }
-                default: Log.error("未知事件类型。type：{}", event.getEvent().getType()); return null;
+                default:
+                    Log.error("未知事件类型。type：{}", event.getEvent().getType());
+                    return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toList());
 
         // 批量处理命令
-        elasticSearchDao.bulk(esAddr, esEvent.getMapping().getIndex(), esEvent.getMapping().getType(), actions.stream().filter(action -> action instanceof BulkableAction).map(action -> (BulkableAction)action).collect(Collectors.toList()));
+        elasticSearchDao.bulk(esAddr, esEvent.getMapping().getIndex(), esEvent.getMapping().getType(), actions.stream().filter(action -> action instanceof BulkableAction).map(action -> (BulkableAction) action).collect(Collectors.toList()));
 
         // 逐条执行命令
         actions.stream().filter(action -> !(action instanceof BulkableAction)).forEach(action ->
-            elasticSearchDao.execr(esAddr, esEvent.getMapping().getIndex(), esEvent.getMapping().getType(), action)
+                elasticSearchDao.execr(esAddr, esEvent.getMapping().getIndex(), esEvent.getMapping().getType(), action)
         );
     }
 
     /**
      * 新增操作
-     * @param event 事件
+     *
+     * @param event  事件
      * @param source 来源（canal：数据变更事件，init：数据初始化）
      * @return 新增处理
      */
-    private Index addAll(EsEvent event, String source){
+    private Index addAll(EsEvent event, String source) {
         // 文档ID
         String id = getId(event);
         // 保存本地缓存
-        if(event.getMapping().isCopyChild() && SOURCE_CANAL.equals(source)) {
-            esQueryService.saveEventCache(event.getMapping().getTableKey(), id, event.getEvent().getAllColumns().stream().filter(e -> e.getName()!=null).collect(Collectors.toMap(EventColumn::getName, e -> e.getValue()!=null? e.getValue():"")));
+        if (event.getMapping().isCopyChild() && SOURCE_CANAL.equals(source)) {
+            esQueryService.saveEventCache(event.getMapping().getTableKey(), id, event.getEvent().getAllColumns().stream().filter(e -> e.getName() != null).collect(Collectors.toMap(EventColumn::getName, e -> e.getValue() != null ? e.getValue() : "")));
         }
         // 更新ES文档
-        Log.info("【ES】新增文档 {}, index：{}，type：{}, id：{}，delay：{}，insert：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), id, (System.currentTimeMillis() - event.getEvent().getExecuteTime())+"/ms" , JsonUtils.toJson(event.getEsData()));
+        Log.info("【ES】新增文档 {}, index：{}，type：{}, id：{}，delay：{}，insert：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), id, (System.currentTimeMillis() - event.getEvent().getExecuteTime()) + "/ms", JsonUtils.toJson(event.getEsData()));
         return new Index.Builder(event.getEsData()).index(event.getMapping().getIndex()).type(event.getMapping().getType()).id(id).build();
     }
 
     /**
      * 更新操作
+     *
      * @param event 事件
      * @return 更新处理
      */
-    private Index updateAll(EsEvent event){
+    private Index updateAll(EsEvent event) {
         // 文档ID
         String id = getId(event);
         // 更新ES文档
-        Log.info("【ES】更新文档 {}, index：{}，type：{}, id：{}，delay：{}，update：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), id, (System.currentTimeMillis() - event.getEvent().getExecuteTime())+"/ms" , JsonUtils.toJson(event.getEsData()));
+        Log.info("【ES】更新文档 {}, index：{}，type：{}, id：{}，delay：{}，update：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), id, (System.currentTimeMillis() - event.getEvent().getExecuteTime()) + "/ms", JsonUtils.toJson(event.getEsData()));
         return new Index.Builder(event.getEsData()).index(event.getMapping().getIndex()).type(event.getMapping().getType()).id(id).build();
     }
 
     /**
      * 新增子表操作
+     *
      * @param event 事件
      * @return 新增处理
      */
-    private UpdateByQuery addChild(EsEvent event){
+    private UpdateByQuery addChild(EsEvent event) {
 
         // 更新条件
-        Map<String,Object> query = getUpdateQuery(event);
+        Map<String, Object> query = getUpdateQuery(event);
         // 转为Es更新命令
         String updateCmd = new EsUpdateQuery(query, event.getEsData()).toString();
         // 更新ES文档
-        Log.info("【ES】新增子文档 {}, index：{}，type：{}, query：{}，delay：{}，insert：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), query, (System.currentTimeMillis() - event.getEvent().getExecuteTime())+"/ms" , JsonUtils.toJson(event.getEsData()));
+        Log.info("【ES】新增子文档 {}, index：{}，type：{}, query：{}，delay：{}，insert：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), query, (System.currentTimeMillis() - event.getEvent().getExecuteTime()) + "/ms", JsonUtils.toJson(event.getEsData()));
         return new UpdateByQuery.Builder(updateCmd).addIndex(event.getMapping().getIndex()).addType(event.getMapping().getType()).build();
     }
 
     /**
      * 更新操作
+     *
      * @param event 事件
      * @return 更新处理
      */
-    private Update update(EsEvent event){
+    private Update update(EsEvent event) {
         // 提取 MySQL -> ES 字段映射 <MySQL列，ES字段>
         Map<String, String> col2FieldMap = event.getMapping().getFieldMapping().stream().collect(Collectors.toMap(EsSyncMappingField::getSourceColumn, EsSyncMappingField::getField));
         // 更新字段 <ES字段，值>
@@ -221,18 +234,19 @@ public class EsTransformService {
         // 文档ID
         String id = getId(event);
         // 更新ES文档
-        Log.info("【ES】修改文档 {}, index：{}，type：{}, id：{}，delay：{}，update：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), id,(System.currentTimeMillis() - event.getEvent().getExecuteTime())+"/ms" , JsonUtils.toJson(updateCols));
+        Log.info("【ES】修改文档 {}, index：{}，type：{}, id：{}，delay：{}，update：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), id, (System.currentTimeMillis() - event.getEvent().getExecuteTime()) + "/ms", JsonUtils.toJson(updateCols));
         return new Update.Builder(updateCmd).index(event.getMapping().getIndex()).type(event.getMapping().getType()).id(id).build();
     }
 
     /**
      * 更新子表操作
+     *
      * @param event 事件
      * @return 更新处理
      */
-    private UpdateByQuery updateChild(EsEvent event){
+    private UpdateByQuery updateChild(EsEvent event) {
         // 更新条件
-        Map<String,Object> query = getUpdateQuery(event);
+        Map<String, Object> query = getUpdateQuery(event);
         // 提取 MySQL -> ES 字段映射 <MySQL列，ES字段>
         Map<String, String> col2FieldMap = event.getMapping().getFieldMapping().stream().collect(Collectors.toMap(EsSyncMappingField::getSourceColumn, EsSyncMappingField::getField));
         // 更新字段 <ES字段，值>
@@ -240,62 +254,65 @@ public class EsTransformService {
         // 转为Es更新命令
         String updateCmd = new EsUpdateQuery(query, updateCols).toString();
         // 更新ES文档
-        Log.info("【ES】修改子文档 {}, index：{}，type：{}, query：{}，delay：{}，update：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), query,(System.currentTimeMillis() - event.getEvent().getExecuteTime())+"/ms" , JsonUtils.toJson(updateCols));
+        Log.info("【ES】修改子文档 {}, index：{}，type：{}, query：{}，delay：{}，update：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), query, (System.currentTimeMillis() - event.getEvent().getExecuteTime()) + "/ms", JsonUtils.toJson(updateCols));
         return new UpdateByQuery.Builder(updateCmd).addIndex(event.getMapping().getIndex()).addType(event.getMapping().getType()).build();
     }
 
     /**
      * 全部删除操作
+     *
      * @param event 事件
      * @return 删除处理
      */
-    private Delete deleteAll(EsEvent event){
+    private Delete deleteAll(EsEvent event) {
         // 文档ID
         String id = getId(event);
         // 删除ES文档
-        Log.info("【ES】删除文档 {}, index：{}，type：{}, id：{}，delay：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), id, (System.currentTimeMillis() - event.getEvent().getExecuteTime())+"/ms");
+        Log.info("【ES】删除文档 {}, index：{}，type：{}, id：{}，delay：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), id, (System.currentTimeMillis() - event.getEvent().getExecuteTime()) + "/ms");
         return new Delete.Builder(id).index(event.getMapping().getIndex()).type(event.getMapping().getType()).id(id).build();
     }
 
     /**
      * 删除子表操作
+     *
      * @param event 事件
      * @return 删除操作
      */
-    private UpdateByQuery deleteChild(EsEvent event){
+    private UpdateByQuery deleteChild(EsEvent event) {
         // 更新条件
-        Map<String,Object> query = getUpdateQuery(event);
+        Map<String, Object> query = getUpdateQuery(event);
         // 转为Es更新命令
         String updateCmd = new EsUpdateQuery(query, convertDeleteField(event.getMapping())).toString();
         // 更新ES文档
-        Log.info("【ES】删除子文档 {}, index：{}，type：{}, query：{}，delay：{}，remove：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), query, (System.currentTimeMillis() - event.getEvent().getExecuteTime())+"/ms", JsonUtils.toJson(event.getEsData()));
+        Log.info("【ES】删除子文档 {}, index：{}，type：{}, query：{}，delay：{}，remove：{}", event.getMapping().getTableKey(), event.getMapping().getIndex(), event.getMapping().getType(), query, (System.currentTimeMillis() - event.getEvent().getExecuteTime()) + "/ms", JsonUtils.toJson(event.getEsData()));
         return new UpdateByQuery.Builder(updateCmd).addIndex(event.getMapping().getIndex()).addType(event.getMapping().getType()).build();
     }
 
     /**
      * 获得主键
+     *
      * @param event 事件
      * @return 主键
      */
-    private String getId(EsEvent event){
+    private String getId(EsEvent event) {
 
         // 副本子表，以关联主表字段作为主键
-        if(event.getMapping().isCopyChild()){
+        if (event.getMapping().isCopyChild()) {
             // 提取关键主表字段作为主键
             Optional<EsSyncMappingField> joinKey = event.getMapping().getFieldMapping().stream().filter(EsSyncMappingField::isJoinKey).findFirst();
-            if(joinKey.isPresent()){
+            if (joinKey.isPresent()) {
                 Object key = event.getEsData().get(joinKey.get().getField());
-                if(key!=null){
+                if (key != null) {
                     return key.toString();
-                }else {
+                } else {
                     return "";
                 }
-            }else {
+            } else {
                 return event.getEvent().getPrimaryKey();
             }
 
-        // 普通表，使用主键
-        }else {
+            // 普通表，使用主键
+        } else {
             // 主表使用主键
             return event.getEvent().getPrimaryKey();
         }
@@ -303,12 +320,13 @@ public class EsTransformService {
 
     /**
      * 获得子表更新条件
+     *
      * @param event 事件
      * @return 子表更新条件
      */
-    private Map<String,Object> getUpdateQuery(EsEvent event){
+    private Map<String, Object> getUpdateQuery(EsEvent event) {
         return event.getMapping().getFieldMapping().stream().filter(EsSyncMappingField::isJoinKey).map(field -> {
-            Map<String,Object> q = new HashMap<>(1);
+            Map<String, Object> q = new HashMap<>(1);
             q.put(field.getJoinMasterEsFieldName(), event.getEsData().get(field.getField()));
             return q;
         }).findFirst().get();
@@ -316,32 +334,34 @@ public class EsTransformService {
 
     /**
      * 补充子表字段内容
+     *
      * @param esEvents 事件列表
      */
-    private void extChildField(List<EsEvent> esEvents){
+    private void extChildField(List<EsEvent> esEvents) {
 
         // 按子表层级分组（true：一级子表，false：多级子表）
         List<EsEvent> eventList = esEvents.stream()
                 // 仅主表新增操作
                 .filter(event -> EventConstants.TYPE_INSERT == event.getEvent().getType() && event.getMapping().isMaster())
                 // 过滤无子表事件
-                .filter(event -> event.getChildLevel()>0)
+                .filter(event -> event.getChildLevel() > 0)
                 .collect(Collectors.toList());
 
         // 按子表层级不同，采用不同处理方式
         if (eventList.size() > 0) {
-                eventList.get(0).getMapping().getChildTable().forEach(child -> {
-                    // 补充子表内容
-                    extChildField(eventList, child);
-                });
+            eventList.get(0).getMapping().getChildTable().forEach(child -> {
+                // 补充子表内容
+                extChildField(eventList, child);
+            });
         }
     }
 
     /**
      * 补充子表字段内容（使用Redis批量处理，性能更高）
+     *
      * @param esEvents 事件列表
      */
-    private void extChildField(List<EsEvent> esEvents, EsSyncMappingTable child){
+    private void extChildField(List<EsEvent> esEvents, EsSyncMappingTable child) {
         // 主表新增查询
         List<ChildQueryInfo> childQueryInfoList = new ArrayList<>();
         esEvents.forEach(event -> {
@@ -350,22 +370,23 @@ public class EsTransformService {
         });
 
         // 补充子表字段内容
-        if(childQueryInfoList.size()>0) {
+        if (childQueryInfoList.size() > 0) {
             extEventData(childQueryInfoList);
         }
 
-        if(child.getChildTable().size()>0){
+        if (child.getChildTable().size() > 0) {
             child.getChildTable().forEach(grandson -> extChildField(esEvents, grandson));
         }
     }
 
     /**
      * 补充子表字段内容
+     *
      * @param childQueryInfoList 查询条件列表
      */
-    private void extEventData(List<ChildQueryInfo> childQueryInfoList){
+    private void extEventData(List<ChildQueryInfo> childQueryInfoList) {
 
-        if(childQueryInfoList.size()>0) {
+        if (childQueryInfoList.size() > 0) {
             ChildQueryInfo simple = childQueryInfoList.get(0);
             // Redis
             if (TYPE_REDIS.equals(simple.getChildSouce())) {
@@ -403,14 +424,14 @@ public class EsTransformService {
     }
 
 
-
     /**
      * 收集子表字段查询信息
+     *
      * @param childQueryInfoList 子表查询信息
-     * @param event 事件信息
-     * @param child 子表定义
+     * @param event              事件信息
+     * @param child              子表定义
      */
-    private void findChildQueryInfo(List<ChildQueryInfo> childQueryInfoList, EsEvent event, EsSyncMappingTable child){
+    private void findChildQueryInfo(List<ChildQueryInfo> childQueryInfoList, EsEvent event, EsSyncMappingTable child) {
         // 提取所有外连表，字段内容
         child.getFieldMapping().stream()
                 // 过滤非外键
@@ -420,12 +441,12 @@ public class EsTransformService {
                     String joinField = field.getJoinMasterEsFieldName();
                     // 获得外键值
                     Object foreignId = event.getEsData().get(joinField);
-                    if(foreignId!=null) {
-                        if(child.getEsCopyMappingId()!=null) {
+                    if (foreignId != null) {
+                        if (child.getEsCopyMappingId() != null) {
                             // ES：按外键ID查询，子表数据
                             childQueryInfoList.add(new ChildQueryInfo(event, child, child.getEsCopyMappingId(), child.getEsAddr(), child.getEsCopyIndex(), foreignId.toString()));
 
-                        }else if(child.getRedisMappingId()!=null){
+                        } else if (child.getRedisMappingId() != null) {
                             // Redis：按外键ID查询，子表数据
                             childQueryInfoList.add(new ChildQueryInfo(event, child, child.getRedisMappingId(), child.getRedisKey(foreignId.toString())));
                         }
@@ -435,11 +456,12 @@ public class EsTransformService {
 
     /**
      * 提取所有删除字段（包括子表）
+     *
      * @param table 表定义
      * @return 字段列表
      */
-    private Map<String,Object> convertDeleteField(EsSyncMappingTable table){
-        Map<String,Object> fields = table.getFieldMapping().stream().map(EsSyncMappingField::getField).collect(Collectors.toMap(f -> f, f ->"delete"));
+    private Map<String, Object> convertDeleteField(EsSyncMappingTable table) {
+        Map<String, Object> fields = table.getFieldMapping().stream().map(EsSyncMappingField::getField).collect(Collectors.toMap(f -> f, f -> "delete"));
         table.getChildTable().forEach(child -> fields.putAll(convertDeleteField(child)));
         return fields;
     }

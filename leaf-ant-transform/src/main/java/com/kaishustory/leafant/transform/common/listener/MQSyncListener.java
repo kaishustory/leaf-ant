@@ -31,7 +31,6 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 
 /**
  * 同步MQ消息监听
@@ -58,7 +57,7 @@ public class MQSyncListener {
      * 创建MQ消费者
      */
     @Bean
-    public MQPushConsumer createSyncMqConsumer(@Value("${mq.sync.groupId}") String group, @Value("${mq.sync.topic}") String topic, @Value("${mq.addr}") String addr){
+    public MQPushConsumer createSyncMqConsumer(@Value("${mq.sync.groupId}") String group, @Value("${mq.sync.topic}") String topic, @Value("${mq.addr}") String addr) {
 
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(group);
         try {
@@ -74,20 +73,20 @@ public class MQSyncListener {
                         try {
                             String body = new String(message.getBody());
                             Event[] events = JsonUtils.fromJson(body, Event[].class);
-                            Log.info("收到同步MQ消息：{}，Size：{}", mqid, events==null ? 0 : events.length);
+                            Log.info("收到同步MQ消息：{}，Size：{}", mqid, events == null ? 0 : events.length);
                             try {
                                 eventRouteService.route(events);
-                            }catch (Exception e){
+                            } catch (Exception e) {
                                 Log.error(String.format("MQ消息处理异常，将任务转为单条处理模式！%s", mqid), e);
                                 Arrays.stream(Objects.requireNonNull(events)).forEach(event -> {
                                     try {
                                         eventRouteService.route(event);
-                                    }catch (Exception e1){
+                                    } catch (Exception e1) {
                                         Log.error(String.format("MQ消息处理异常！%s，table：%s，type：%s，id：%s", mqid, event.getTableKey(), event.getTypeName(), event.getPrimaryKey()), e1);
                                     }
                                 });
                             }
-                        }catch (Throwable t){
+                        } catch (Throwable t) {
                             Log.error("同步MQ消息处理异常！{}", mqid, t);
                         }
                     });
@@ -95,12 +94,11 @@ public class MQSyncListener {
                 }
             });
             consumer.start();
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("创建MQ监听失败！", e);
         }
         return consumer;
     }
-
 
 
 }

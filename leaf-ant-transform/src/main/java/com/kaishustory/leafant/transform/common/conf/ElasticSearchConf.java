@@ -49,12 +49,13 @@ public class ElasticSearchConf {
 
     /**
      * 创建 连接
+     *
      * @return
      */
     public JestClient getTransportClient(String esAddr) {
-        if(!factoryPool.containsKey(esAddr)) {
+        if (!factoryPool.containsKey(esAddr)) {
             synchronized (this) {
-                if(!factoryPool.containsKey(esAddr)) {
+                if (!factoryPool.containsKey(esAddr)) {
                     JestClientFactory factory = new JestClientFactory();
                     factory.setHttpClientConfig(new HttpClientConfig
                             // 服务器列表

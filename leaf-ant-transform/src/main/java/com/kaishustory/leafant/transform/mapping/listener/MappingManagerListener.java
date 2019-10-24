@@ -100,19 +100,19 @@ public class MappingManagerListener {
      * 创建映射事件监听
      */
     @PostConstruct
-    public void createMappingLister(){
+    public void createMappingLister() {
 
         // 监听创建映射消息
         new NettyConsumer(messageGroup, mappingCreateType, zookeeper, rpcRequest -> {
             try {
                 // 创建映射
                 Option<String> result = createMapping(rpcRequest);
-                if(result.exist()){
+                if (result.exist()) {
                     return new RpcResponse("create-callback", "ok", RpcResponse.STATUS_SUCCESS);
-                }else {
+                } else {
                     return new RpcResponse("create-callback", "fail", RpcResponse.STATUS_FAIL);
                 }
-            }catch (Throwable e){
+            } catch (Throwable e) {
                 return new RpcResponse("create-callback", "fail", RpcResponse.STATUS_FAIL);
             }
         });
@@ -123,14 +123,14 @@ public class MappingManagerListener {
             try {
                 // 同步状态更新
                 Option result = updateSync(rpcRequest.getAction(), syncStatus);
-                if(result.exist()){
+                if (result.exist()) {
                     Log.info("{} 同步状态变更成功。status：{}", rpcRequest.getAction(), syncStatus);
                     return new RpcResponse("sync-callback", "ok", RpcResponse.STATUS_SUCCESS);
-                }else {
+                } else {
                     Log.error("{} 同步状态变更失败。status：{}，err：{}", rpcRequest.getAction(), syncStatus, result.getErrmsg());
                     return new RpcResponse("sync-callback", "fail", RpcResponse.STATUS_FAIL);
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 Log.error("{} 同步状态变更失败。status：{}", rpcRequest.getAction(), syncStatus, e);
                 return new RpcResponse("sync-callback", "fail", RpcResponse.STATUS_FAIL);
             }
@@ -139,32 +139,33 @@ public class MappingManagerListener {
 
     /**
      * 创建映射
+     *
      * @param rpcRequest 请求
      * @return 是否成功
      */
-    private Option<String> createMapping(RpcRequest rpcRequest){
+    private Option<String> createMapping(RpcRequest rpcRequest) {
 
         // ES
-        if(TYPE_ES.equals(rpcRequest.getAction())) {
+        if (TYPE_ES.equals(rpcRequest.getAction())) {
             // 创建ES索引
             return esMappingService.createIndex(JsonUtils.fromJson(rpcRequest.getData(), EsSyncConfig.class), (esSyncConfig) -> {
                 // 创建ES映射处理
                 return elasticSearchDao.createIndex(esSyncConfig.getEsAddr(), esSyncConfig.getIndex(), esSyncConfig.getType(), toEsMapping(esSyncConfig));
             });
 
-        // Redis
-        }else if(TYPE_REDIS.equals(rpcRequest.getAction())){
+            // Redis
+        } else if (TYPE_REDIS.equals(rpcRequest.getAction())) {
             return redisMappingService.createIndex(JsonUtils.fromJson(rpcRequest.getData(), RedisSyncConfig.class));
 
-        // MySQL
-        }else if(TYPE_MYSQL.equals(rpcRequest.getAction())){
+            // MySQL
+        } else if (TYPE_MYSQL.equals(rpcRequest.getAction())) {
             return mysqlMappingService.createIndex(JsonUtils.fromJson(rpcRequest.getData(), MySQLSyncConfig.class));
 
-        // MQ
-        }else if(TYPE_MQ.equals(rpcRequest.getAction())){
+            // MQ
+        } else if (TYPE_MQ.equals(rpcRequest.getAction())) {
             return mqMappingService.createIndex(JsonUtils.fromJson(rpcRequest.getData(), MqSyncConfig.class));
 
-        }else {
+        } else {
             Log.errorThrow("无法创建映射，未知映射类型。type：{}", rpcRequest.getAction());
             return null;
         }
@@ -173,29 +174,30 @@ public class MappingManagerListener {
 
     /**
      * 更新同步状态
-     * @param type 类型
+     *
+     * @param type       类型
      * @param syncStatus 状态信息
      * @return 是否成功
      */
-    private Option updateSync(String type, SyncStatus syncStatus){
+    private Option updateSync(String type, SyncStatus syncStatus) {
 
         // ES
-        if(TYPE_ES.equals(type)) {
+        if (TYPE_ES.equals(type)) {
             return esMappingService.updateSyncStatus(syncStatus);
 
-        // Redis
-        }else if(TYPE_REDIS.equals(type)){
+            // Redis
+        } else if (TYPE_REDIS.equals(type)) {
             return redisMappingService.updateSyncStatus(syncStatus);
 
-        // MySQL
-        }else if(TYPE_MYSQL.equals(type)){
+            // MySQL
+        } else if (TYPE_MYSQL.equals(type)) {
             return mysqlMappingService.updateSyncStatus(syncStatus);
 
-        // MQ
-        }else if(TYPE_MQ.equals(type)){
+            // MQ
+        } else if (TYPE_MQ.equals(type)) {
             return mqMappingService.updateSyncStatus(syncStatus);
 
-        }else {
+        } else {
             Log.errorThrow("无法创建映射，未知映射类型。type：{}", type);
             return null;
         }
@@ -204,10 +206,11 @@ public class MappingManagerListener {
 
     /**
      * 转换Es映射结构
+     *
      * @param esSyncConfig
      * @return
      */
-    private EsMapping toEsMapping(EsSyncConfig esSyncConfig){
+    private EsMapping toEsMapping(EsSyncConfig esSyncConfig) {
         EsMapping esMapping = new EsMapping();
         esMapping.setDynamic("false");
         esSyncConfig.getTableList().stream().flatMap(table -> table.getFieldMapping().stream()).forEach(field ->

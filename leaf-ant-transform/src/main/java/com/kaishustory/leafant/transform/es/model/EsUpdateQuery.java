@@ -33,7 +33,7 @@ public class EsUpdateQuery {
 
     private JsonObject query;
 
-    public EsUpdateQuery(Map<String,Object> querys, Map<String,Object> fields) {
+    public EsUpdateQuery(Map<String, Object> querys, Map<String, Object> fields) {
         this.script = new EsUpdate.Script(genScript(fields), fields);
         this.query = genQuery(querys);
     }
@@ -45,12 +45,13 @@ public class EsUpdateQuery {
 
     /**
      * 查询脚本
+     *
      * @param querys 查询条件
      * @return 脚本
      */
-    private JsonObject genQuery(Map<String,Object> querys){
-        String queryString = querys.entrySet().stream().map(field -> field.getKey()+": "+field.getValue()+"").reduce((a,b) -> a+" AND "+b).get();
-        return JsonUtils.toJsonObject("{\"query_string\": {\"query\": \"" + queryString +"\"}}");
+    private JsonObject genQuery(Map<String, Object> querys) {
+        String queryString = querys.entrySet().stream().map(field -> field.getKey() + ": " + field.getValue() + "").reduce((a, b) -> a + " AND " + b).get();
+        return JsonUtils.toJsonObject("{\"query_string\": {\"query\": \"" + queryString + "\"}}");
     }
 
 }

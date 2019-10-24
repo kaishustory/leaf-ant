@@ -39,30 +39,31 @@ public class RedisTransformService {
 
     /**
      * Redis 同步事件处理
+     *
      * @param redisDataSourceConfig redis数据源配置
-     * @param redisEvents Redis事件列表
+     * @param redisEvents           Redis事件列表
      */
-    public void eventHandle(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, List<RedisEvent> redisEvents){
+    public void eventHandle(RedisSyncConfig.RedisDataSourceConfig redisDataSourceConfig, List<RedisEvent> redisEvents) {
 
         // 批量处理
         redisDao.batch(redisDataSourceConfig, redisEvents, (RedisDao.RedisHandle<RedisEvent>) (connection, event) -> {
-                switch (event.getType()){
-                    // 新增、更新，写入数据
-                    case EventConstants.TYPE_INSERT:
-                    case EventConstants.TYPE_UPDATE:
-                        connection.set(event.getRedisKey().getBytes(), event.getBody().getBytes());
-                        Log.info("【Redis】更新文档 key：{}，delay：{}，body：{}", event.getRedisKey(), (System.currentTimeMillis() - event.getExecuteTime())+"/ms" , event.getBody());
-                        break;
+                    switch (event.getType()) {
+                        // 新增、更新，写入数据
+                        case EventConstants.TYPE_INSERT:
+                        case EventConstants.TYPE_UPDATE:
+                            connection.set(event.getRedisKey().getBytes(), event.getBody().getBytes());
+                            Log.info("【Redis】更新文档 key：{}，delay：{}，body：{}", event.getRedisKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms", event.getBody());
+                            break;
 
-                    // 删除，删除数据
-                    case EventConstants.TYPE_DELETE:
-                        connection.del(event.getRedisKey().getBytes());
-                        Log.info("【Redis】删除文档 key：{}，delay：{}", event.getRedisKey(), (System.currentTimeMillis() - event.getExecuteTime())+"/ms");
-                        break;
+                        // 删除，删除数据
+                        case EventConstants.TYPE_DELETE:
+                            connection.del(event.getRedisKey().getBytes());
+                            Log.info("【Redis】删除文档 key：{}，delay：{}", event.getRedisKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms");
+                            break;
 
-                    default:
+                        default:
+                    }
                 }
-            }
         );
 
     }

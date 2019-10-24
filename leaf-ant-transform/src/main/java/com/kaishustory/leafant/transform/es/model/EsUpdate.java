@@ -30,9 +30,25 @@ public class EsUpdate {
 
     private Map<String, Object> upsert;
 
-    public EsUpdate(Map<String,Object> fields) {
+    public EsUpdate(Map<String, Object> fields) {
         this.script = new Script(genScript(fields), fields);
         this.upsert = fields;
+    }
+
+    /**
+     * 更新脚本
+     *
+     * @param fields 更新字段
+     * @return 脚本
+     */
+    protected static String genScript(Map<String, Object> fields) {
+        return fields.entrySet().stream().map(field -> {
+            if ("delete".equals(field.getValue())) {
+                return "ctx._source.remove('" + field.getKey() + "')";
+            } else {
+                return "ctx._source." + field.getKey() + " = params." + field.getKey();
+            }
+        }).reduce((a, b) -> a + "; " + b).get();
     }
 
     @Override
@@ -40,23 +56,8 @@ public class EsUpdate {
         return JsonUtils.toJson(this);
     }
 
-    /**
-     * 更新脚本
-     * @param fields 更新字段
-     * @return 脚本
-     */
-    protected static String genScript(Map<String,Object> fields){
-        return fields.entrySet().stream().map(field ->{
-            if("delete".equals(field.getValue())) {
-                return "ctx._source.remove('" + field.getKey() +"')";
-            }else {
-                return "ctx._source." + field.getKey() + " = params." + field.getKey();
-            }
-        }).reduce((a,b) -> a+"; "+b).get();
-    }
-
     @Data
-    protected static class Script{
+    protected static class Script {
         private String source;
         private String lang = "painless";
         private Map<String, Object> params;
