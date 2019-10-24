@@ -41,36 +41,38 @@ public class LoginController {
 
     /**
      * 账号注册
-     * @param user 用户名
+     *
+     * @param user     用户名
      * @param password 密码
      * @return
      */
     @GetMapping("/addUser")
-    public Result addUser(String user, String password){
+    public Result addUser(String user, String password) {
         try {
             userService.addUser(user, password);
             return new Result(200, "注册成功");
-        }catch (Exception e){
+        } catch (Exception e) {
             return new Result(500, "注册失败！");
         }
     }
 
     /**
      * 用户登录
-     * @param user 用户名
+     *
+     * @param user     用户名
      * @param password 密码
-     * @param request 请求
+     * @param request  请求
      * @return
      */
     @GetMapping("/login")
-    public Result login(@RequestParam String user, @RequestParam String password, HttpServletRequest request){
+    public Result login(@RequestParam String user, @RequestParam String password, HttpServletRequest request) {
         // 用户登录验证
-        if(userService.login(user, password)) {
+        if (userService.login(user, password)) {
             // 写入登录Token
             addSession(user, password, request);
             log.info("用户登录：User：{}", user);
             return new Result(200, "登录成功");
-        }else {
+        } else {
             return new Result(500, "用户名或密码错误！");
         }
     }
@@ -79,22 +81,23 @@ public class LoginController {
      * 用户登出
      */
     @GetMapping("/logout")
-    public Result logout(HttpServletRequest request){
+    public Result logout(HttpServletRequest request) {
         clearSession(request);
         return new Result(200, "登出成功");
     }
 
-    private String getToken(String user, String password){
-        return Base64.getEncoder().encodeToString((user+":"+password).getBytes());
+    private String getToken(String user, String password) {
+        return Base64.getEncoder().encodeToString((user + ":" + password).getBytes());
     }
 
     /**
      * 写入Session
-     * @param user 用户名
+     *
+     * @param user     用户名
      * @param password 密码
-     * @param request 请求
+     * @param request  请求
      */
-    private void addSession(String user, String password, HttpServletRequest request){
+    private void addSession(String user, String password, HttpServletRequest request) {
         // 写入登录Token
         request.getSession().setAttribute("token", getToken(user, password));
         request.getSession().setAttribute("user", user);
@@ -102,9 +105,10 @@ public class LoginController {
 
     /**
      * 清理Session
+     *
      * @param request 请求
      */
-    private void clearSession(HttpServletRequest request){
+    private void clearSession(HttpServletRequest request) {
         request.getSession().invalidate();
     }
 }

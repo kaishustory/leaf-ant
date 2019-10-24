@@ -41,47 +41,51 @@ public class DatasourceController {
      * 查询数据源列表
      */
     @GetMapping("/list")
-    public Page<Datasource> list(){
+    public Page<Datasource> list() {
         return Page.of(datasourceService.findDatabaseList(), 0, 0, 0);
     }
 
     /**
      * 查询数据源
+     *
      * @param id 数据源ID
      * @return 数据源信息
      */
     @GetMapping("/get")
-    public Option<Datasource> get(String id){
+    public Option<Datasource> get(String id) {
         return datasourceService.getDatabase(id);
     }
 
     /**
      * 保存数据源
+     *
      * @param datasource 数据源配置
      * @return 是否成功
      */
     @PostMapping("/save")
-    public Option<String> save(@RequestBody Datasource datasource){
+    public Option<String> save(@RequestBody Datasource datasource) {
         return datasourceService.saveDatabase(datasource);
     }
 
     /**
      * 删除数据源
+     *
      * @param id 数据源ID
      * @return 是否成功
      */
     @GetMapping("/delete")
-    public Option<String> delete(String id){
+    public Option<String> delete(String id) {
         return datasourceService.deleteDatabase(id);
     }
 
     /**
      * 查询数据库列表
+     *
      * @param id 数据源ID
      * @return 数据库列表
      */
     @GetMapping("/tables")
-    public Option<List<String>> tables(String id){
+    public Option<List<String>> tables(String id) {
         return datasourceService.getTables(id);
     }
 

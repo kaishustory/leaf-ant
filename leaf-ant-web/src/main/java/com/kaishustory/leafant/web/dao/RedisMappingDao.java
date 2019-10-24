@@ -32,9 +32,12 @@ import javax.annotation.Resource;
 @Component
 public class RedisMappingDao {
 
+    /**
+     * 集合
+     */
+    private final String collection = "redis_mapping";
     @Resource(name = "mongoTemplate")
     private MongoTemplate mongoTemplate;
-
     /**
      * 环境
      */
@@ -42,42 +45,40 @@ public class RedisMappingDao {
     private String env;
 
     /**
-     * 集合
-     */
-    private final String collection = "redis_mapping";
-
-    /**
      * 查询全部映射
-     * @param page 页号
+     *
+     * @param page     页号
      * @param pageSize 每页条数
      * @return 映射列表
      */
-    public Page<RedisSyncConfig> search(String sourceTable, int page, int pageSize){
+    public Page<RedisSyncConfig> search(String sourceTable, int page, int pageSize) {
         Criteria criteria = new Criteria();
         Query query = new Query(criteria);
         criteria.and("env").is(env);
-        query.skip((page -1)*pageSize).limit(pageSize);
+        query.skip((page - 1) * pageSize).limit(pageSize);
         query.with(Sort.by(Sort.Direction.DESC, "createTime"));
         return Page.of(mongoTemplate.find(query, RedisSyncConfig.class, collection), searchCount(), page, pageSize);
     }
 
     /**
      * 查询全部映射数量
+     *
      * @return 数量
      */
-    private int searchCount(){
+    private int searchCount() {
         Criteria criteria = new Criteria();
         Query query = new Query(criteria);
         criteria.and("env").is(env);
-        return (int)mongoTemplate.count(query, RedisSyncConfig.class, collection);
+        return (int) mongoTemplate.count(query, RedisSyncConfig.class, collection);
     }
 
     /**
      * 查询映射配置
+     *
      * @param mappingId 映射配置ID
      * @return 映射配置
      */
-    public RedisSyncConfig find(String mappingId){
+    public RedisSyncConfig find(String mappingId) {
         return mongoTemplate.findById(mappingId, RedisSyncConfig.class, collection);
     }
 }

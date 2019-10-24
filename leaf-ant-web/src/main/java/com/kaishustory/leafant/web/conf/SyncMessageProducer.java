@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * 同步状态变更消息发送者
+ *
  * @author liguoyang
  * @create 2019-07-30 20:18
  **/

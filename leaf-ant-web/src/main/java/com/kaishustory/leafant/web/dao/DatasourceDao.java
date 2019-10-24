@@ -32,11 +32,14 @@ import java.util.List;
 public class DatasourceDao {
 
     /**
+     * 数据源集合
+     */
+    private final String collection = "datasource";
+    /**
      * Mongo
      */
     @Resource(name = "mongoTemplate")
     private MongoTemplate mongoTemplate;
-
     /**
      * 环境
      */
@@ -44,39 +47,37 @@ public class DatasourceDao {
     private String env;
 
     /**
-     * 数据源集合
-     */
-    private final String collection = "datasource";
-
-    /**
      * 查询数据源列表
      */
-    public List<Datasource> findDatabaseList(){
+    public List<Datasource> findDatabaseList() {
         return mongoTemplate.find(Query.query(Criteria.where("env").is(env)), Datasource.class, collection);
     }
 
     /**
      * 查询数据源
+     *
      * @param id 数据源ID
      */
-    public Datasource get(String id){
+    public Datasource get(String id) {
         return mongoTemplate.findById(id, Datasource.class, collection);
     }
 
     /**
      * 保存数据源
+     *
      * @param datasource 数据源信息
      */
-    public void save(Datasource datasource){
+    public void save(Datasource datasource) {
         datasource.setEnv(env);
         mongoTemplate.save(datasource, collection);
     }
 
     /**
      * 删除数据源
+     *
      * @param id 数据源ID
      */
-    public void delete(String id){
+    public void delete(String id) {
         mongoTemplate.remove(Query.query(Criteria.where("_id").is(id)), Datasource.class, collection);
     }
 }

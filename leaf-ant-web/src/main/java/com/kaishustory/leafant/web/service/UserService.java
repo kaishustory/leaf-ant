@@ -36,20 +36,22 @@ public class UserService {
 
     /**
      * 用户登录验证
-     * @param user 用户名
+     *
+     * @param user     用户名
      * @param password 密码
      * @return 是否验证通过
      */
-    public boolean login(String user, String password){
-        return userDao.findUser(user, DigestUtils.md5DigestAsHex(password.getBytes()))!=null;
+    public boolean login(String user, String password) {
+        return userDao.findUser(user, DigestUtils.md5DigestAsHex(password.getBytes())) != null;
     }
 
     /**
      * 注册用户
-     * @param user 用户名
+     *
+     * @param user     用户名
      * @param password 密码
      */
-    public void addUser(String user, String password){
+    public void addUser(String user, String password) {
         userDao.addUser(user, DigestUtils.md5DigestAsHex(password.getBytes()));
     }
 
@@ -57,10 +59,10 @@ public class UserService {
      * 初始化访客账号
      */
     @PostConstruct
-    public void addGuest(){
+    public void addGuest() {
         String user = "guest";
         String password = "guest";
-        if(!login(user, password)) {
+        if (!login(user, password)) {
             addUser(user, password);
         }
     }

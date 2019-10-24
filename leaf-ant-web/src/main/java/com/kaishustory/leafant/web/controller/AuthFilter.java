@@ -38,9 +38,10 @@ public class AuthFilter implements Filter {
 
     /**
      * 用户权限拦截检查
-     * @param servletRequest 请求
+     *
+     * @param servletRequest  请求
      * @param servletResponse 返回
-     * @param filterChain 过滤
+     * @param filterChain     过滤
      */
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
@@ -49,19 +50,19 @@ public class AuthFilter implements Filter {
 
         try {
             // 跳过验证
-            if(
+            if (
                 // 登录页面
-                request.getRequestURI().equals("/page/login")
-                // 登录请求
-                || request.getRequestURI().equals("/login")
-                // 静态资源
-                || request.getRequestURI().startsWith("/static")
+                    request.getRequestURI().equals("/page/login")
+                            // 登录请求
+                            || request.getRequestURI().equals("/login")
+                            // 静态资源
+                            || request.getRequestURI().startsWith("/static")
 //                // 测试请求
 //                || request.getRequestURI().startsWith("/elasticsearchMapping")
 //                || request.getRequestURI().startsWith("/redisMapping")
 //                || request.getRequestURI().startsWith("/mqMapping")
 //                || request.getRequestURI().startsWith("/mysqlMapping")
-            ){
+                    ) {
                 // 允许访问
                 filterChain.doFilter(request, response);
                 return;
@@ -70,17 +71,17 @@ public class AuthFilter implements Filter {
             // 读取用户token
             Object token = request.getSession().getAttribute("token");
             // 检查是否有token
-            if(token!=null){
+            if (token != null) {
                 // 允许访问
                 filterChain.doFilter(request, response);
                 return;
-            }else {
+            } else {
                 log.info("用户未登录，前往登录页！uri：{}", request.getRequestURI());
                 // 调至登录页面
                 response.sendRedirect("/page/login");
                 return;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("登录验证异常！uri：{}", request.getRequestURI(), e);
         }
     }

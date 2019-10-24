@@ -38,54 +38,58 @@ public class RedisController {
 
     /**
      * Redis映射配置列表
+     *
      * @param sourceTable 源表（查询条件）
-     * @param page 页号
-     * @param pageSize 每页条数
+     * @param page        页号
+     * @param pageSize    每页条数
      * @return 列表
      */
     @GetMapping("/search")
-    public Page<RedisSyncConfig> search(@RequestParam(required = false) String sourceTable, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int pageSize){
+    public Page<RedisSyncConfig> search(@RequestParam(required = false) String sourceTable, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int pageSize) {
         return redisMappingService.search(sourceTable, page, pageSize);
     }
 
     /**
      * 创建映射
+     *
      * @param redisSyncConfig 映射定义
      * @return 返回结果
      */
     @PostMapping("/createMapping")
-    public Result createMapping(@RequestBody RedisSyncConfig redisSyncConfig){
+    public Result createMapping(@RequestBody RedisSyncConfig redisSyncConfig) {
         boolean success = redisMappingService.createMapping(redisSyncConfig);
-        if(success) {
+        if (success) {
             return new Result(Result.success, "success");
-        }else {
+        } else {
             return new Result(Result.fail, "fail");
         }
     }
 
     /**
      * 初始化数据
+     *
      * @param mappingId 数据同步定义ID
      * @return 返回结果
      */
     @GetMapping("/loadData")
-    public Result loadData(String mappingId){
+    public Result loadData(String mappingId) {
         boolean success = redisMappingService.loadData(mappingId);
-        if(success) {
+        if (success) {
             return new Result(Result.success, "success");
-        }else {
+        } else {
             return new Result(Result.fail, "fail");
         }
     }
 
     /**
      * 修改同步状态
-     * @param mappingId 数据同步定义ID
+     *
+     * @param mappingId  数据同步定义ID
      * @param syncStatus 是否同步
      * @return
      */
     @GetMapping("/syncStatus")
-    public Result syncStatus(String mappingId, boolean syncStatus){
+    public Result syncStatus(String mappingId, boolean syncStatus) {
         redisMappingService.updateSyncStatus(mappingId, syncStatus);
         return new Result(Result.success, "success");
     }

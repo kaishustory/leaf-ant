@@ -33,9 +33,12 @@ import javax.annotation.Resource;
 @Component
 public class ElasticSearchMappingDao {
 
+    /**
+     * 集合
+     */
+    private final String collection = "elasticsearch_mapping";
     @Resource(name = "mongoTemplate")
     private MongoTemplate mongoTemplate;
-
     /**
      * 环境
      */
@@ -43,23 +46,19 @@ public class ElasticSearchMappingDao {
     private String env;
 
     /**
-     * 集合
-     */
-    private final String collection = "elasticsearch_mapping";
-
-    /**
      * 查询全部映射
-     * @param page 页号
+     *
+     * @param page     页号
      * @param pageSize 每页条数
      * @return 映射列表
      */
-    public Page<EsSyncConfig> search(String sourceTable, int page, int pageSize){
+    public Page<EsSyncConfig> search(String sourceTable, int page, int pageSize) {
         Criteria criteria = new Criteria();
         Query query = new Query(criteria);
         criteria.and("env").is(env);
         criteria.and("show").is(true);
-        query.skip((page -1)*pageSize).limit(pageSize);
-        if(StringUtils.isNotNull(sourceTable)){
+        query.skip((page - 1) * pageSize).limit(pageSize);
+        if (StringUtils.isNotNull(sourceTable)) {
             criteria.orOperator(Criteria.where("masterTable.sourceTable").regex(sourceTable), Criteria.where("childTable.sourceTable").regex(sourceTable));
         }
         query.with(Sort.by(Sort.Direction.DESC, "createTime"));
@@ -68,22 +67,24 @@ public class ElasticSearchMappingDao {
 
     /**
      * 查询全部映射数量
+     *
      * @return 数量
      */
-    private int searchCount(){
+    private int searchCount() {
         Criteria criteria = new Criteria();
         Query query = new Query(criteria);
         criteria.and("env").is(env);
         criteria.and("show").is(true);
-        return (int)mongoTemplate.count(query, EsSyncConfig.class, collection);
+        return (int) mongoTemplate.count(query, EsSyncConfig.class, collection);
     }
 
     /**
      * 查询映射配置
+     *
      * @param mappingId 映射配置ID
      * @return 映射配置
      */
-    public EsSyncConfig find(String mappingId){
+    public EsSyncConfig find(String mappingId) {
         return mongoTemplate.findById(mappingId, EsSyncConfig.class, collection);
     }
 }

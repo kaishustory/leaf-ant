@@ -25,6 +25,27 @@ import java.util.List;
 @Data
 public class ElasticSearchMappingVo {
 
+    /**
+     * 映射ID
+     */
+    private String mappingId;
+    /**
+     * 索引
+     */
+    private String elasticSearchIndex;
+    /**
+     * 是否同步
+     */
+    private boolean sync;
+    /**
+     * 初始化状态
+     */
+    private String init;
+    /**
+     * 数据源
+     */
+    private List<ElasticSearchMappingSourceVo> sourceList;
+
     public ElasticSearchMappingVo() {
     }
 
@@ -36,33 +57,21 @@ public class ElasticSearchMappingVo {
         this.init = init;
     }
 
-    /**
-     * 映射ID
-     */
-    private String mappingId;
-
-    /**
-     * 索引
-     */
-    private String elasticSearchIndex;
-
-    /**
-     * 是否同步
-     */
-    private boolean sync;
-
-    /**
-     * 初始化状态
-     */
-    private String init;
-
-    /**
-     * 数据源
-     */
-    private List<ElasticSearchMappingSourceVo> sourceList;
-
     @Data
-    public static class ElasticSearchMappingSourceVo{
+    public static class ElasticSearchMappingSourceVo {
+
+        /**
+         * 是否主表
+         */
+        private boolean master;
+        /**
+         * 数据库
+         */
+        private String sourceDatabase;
+        /**
+         * 数据表
+         */
+        private String sourceTables;
 
         public ElasticSearchMappingSourceVo() {
         }
@@ -72,20 +81,5 @@ public class ElasticSearchMappingVo {
             this.sourceDatabase = sourceDatabase;
             this.sourceTables = sourceTables;
         }
-
-        /**
-         * 是否主表
-         */
-        private boolean master;
-
-        /**
-         * 数据库
-         */
-        private String sourceDatabase;
-
-        /**
-         * 数据表
-         */
-        private String sourceTables;
     }
 }

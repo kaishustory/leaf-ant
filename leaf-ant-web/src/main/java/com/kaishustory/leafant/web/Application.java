@@ -28,6 +28,7 @@ public class Application {
 
     /**
      * 项目启动
+     *
      * @param args
      */
     public static void main(String[] args) {

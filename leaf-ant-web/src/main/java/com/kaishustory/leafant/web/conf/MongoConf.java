@@ -28,7 +28,7 @@ public class MongoConf {
 
     @Primary
     @Bean(name = "mongoTemplate")
-    public MongoTemplate defaultMongoTemplate(@Value("${mongo.url}") String hostUrl){
+    public MongoTemplate defaultMongoTemplate(@Value("${mongo.url}") String hostUrl) {
         return new MongoTemplate(new SimpleMongoDbFactory(new MongoClientURI(hostUrl)));
     }
 

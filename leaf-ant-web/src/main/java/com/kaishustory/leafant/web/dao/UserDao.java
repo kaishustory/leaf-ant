@@ -42,20 +42,22 @@ public class UserDao {
 
     /**
      * 按用户名和密码查询用户
-     * @param user 用户名
+     *
+     * @param user     用户名
      * @param password 密码（MD5）
      * @return 用户
      */
-    public User findUser(String user, String password){
+    public User findUser(String user, String password) {
         return mongoTemplate.findOne(Query.query(Criteria.where("user").is(user).and("password").is(password).and("open").is(true)), User.class, collection);
     }
 
     /**
      * 用户注册
-     * @param user 用户名
+     *
+     * @param user     用户名
      * @param password 密码
      */
-    public void addUser(String user, String password){
+    public void addUser(String user, String password) {
         mongoTemplate.save(new User(user, password, true));
     }
 }

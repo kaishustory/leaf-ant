@@ -18,17 +18,17 @@ import com.kaishustory.leafant.common.model.SyncStatus;
 import com.kaishustory.leafant.common.utils.JsonUtils;
 import com.kaishustory.leafant.common.utils.Log;
 import com.kaishustory.leafant.common.utils.Page;
+import com.kaishustory.leafant.web.dao.RedisMappingDao;
 import com.kaishustory.message.common.model.RpcRequest;
 import com.kaishustory.message.common.model.RpcResponse;
 import com.kaishustory.message.producer.NettyTopicProducer;
-import com.kaishustory.leafant.web.dao.RedisMappingDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
-import static com.kaishustory.leafant.common.constants.EventConstants.*;
+import static com.kaishustory.leafant.common.constants.EventConstants.ACTION_LOAD;
 import static com.kaishustory.leafant.common.constants.MappingConstants.TYPE_REDIS;
 import static com.kaishustory.message.common.model.RpcResponse.STATUS_SUCCESS;
 
@@ -67,35 +67,38 @@ public class RedisMappingService {
 
     /**
      * 查询映射列表
-     * @param page 页号
+     *
+     * @param page     页号
      * @param pageSize 每页条数
      * @return 映射列表
      */
-    public Page<RedisSyncConfig> search(String sourceTable, int page, int pageSize){
+    public Page<RedisSyncConfig> search(String sourceTable, int page, int pageSize) {
         return toVo(redisMappingDao.search(sourceTable, page, pageSize));
     }
 
     /**
      * 转换Vo
+     *
      * @param domains
      * @return
      */
-    private Page<RedisSyncConfig> toVo(Page<RedisSyncConfig> domains){
+    private Page<RedisSyncConfig> toVo(Page<RedisSyncConfig> domains) {
         return domains;
     }
 
     /**
      * 创建映射
+     *
      * @param redisSyncConfig 映射定义
      */
-    public boolean createMapping(RedisSyncConfig redisSyncConfig){
+    public boolean createMapping(RedisSyncConfig redisSyncConfig) {
 
         // 发送创建映射消息
         RpcResponse response = createMappingMessageProducer.sendSyncMsg(new RpcRequest(TYPE_REDIS, JsonUtils.toJson(redisSyncConfig)));
-        if(response.getStatus() == STATUS_SUCCESS){
+        if (response.getStatus() == STATUS_SUCCESS) {
             Log.info("Redis 创建映射成功。key_prefix：{}", redisSyncConfig.getRedisKeyPrefix());
             return true;
-        }else {
+        } else {
             Log.error("Redis 创建映射失败。key_prefix：{}", redisSyncConfig.getRedisKeyPrefix());
             return false;
         }
@@ -103,14 +106,15 @@ public class RedisMappingService {
 
     /**
      * 加载初始数据
+     *
      * @param mappingId 数据同步定义ID
      */
-    public boolean loadData(String mappingId){
+    public boolean loadData(String mappingId) {
 
         // 查询映射配置
         RedisSyncConfig redisSyncConfig = redisMappingDao.find(mappingId);
 
-        if(redisSyncConfig==null){
+        if (redisSyncConfig == null) {
             Log.error("Redis 配置ID不存在。{}", mappingId);
             return false;
         }
@@ -118,10 +122,10 @@ public class RedisMappingService {
         new Thread(() -> {
             Log.info("Redis 初始化开始。database：{}，table：{}", redisSyncConfig.getDataSourceConfig().getDatabase(), redisSyncConfig.getDataSourceConfig().getTable());
             // 发送初始数据消息
-            RpcResponse response = loadMessageProducer.sendSyncMsg(new RpcRequest(ACTION_LOAD, JsonUtils.toJson(new InitLoadInfo( TYPE_REDIS, mappingId, redisSyncConfig.getDataSourceConfig()))), 3, TimeUnit.HOURS);
-            if(response.getStatus() == STATUS_SUCCESS){
+            RpcResponse response = loadMessageProducer.sendSyncMsg(new RpcRequest(ACTION_LOAD, JsonUtils.toJson(new InitLoadInfo(TYPE_REDIS, mappingId, redisSyncConfig.getDataSourceConfig()))), 3, TimeUnit.HOURS);
+            if (response.getStatus() == STATUS_SUCCESS) {
                 Log.info("Redis 初始化数据成功。database：{}，table：{}", redisSyncConfig.getDataSourceConfig().getDatabase(), redisSyncConfig.getDataSourceConfig().getTable());
-            }else {
+            } else {
                 Log.error("Redis 初始化数据失败。database：{}，table：{}", redisSyncConfig.getDataSourceConfig().getDatabase(), redisSyncConfig.getDataSourceConfig().getTable());
             }
         }, "redis-load-monitor-thread").start();
@@ -132,13 +136,13 @@ public class RedisMappingService {
 
     /**
      * 同步状态变更
+     *
      * @param mappingId 数据同步定义ID
      * @return
      */
-    public void updateSyncStatus(String mappingId, boolean syncStatus){
+    public void updateSyncStatus(String mappingId, boolean syncStatus) {
         syncMessageProducer.sendSyncMsg(new RpcRequest(TYPE_REDIS, JsonUtils.toJson(new SyncStatus(TYPE_REDIS, mappingId, syncStatus))));
     }
-
 
 
 }

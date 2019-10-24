@@ -55,37 +55,40 @@ public class ElasticSearchController {
 
     /**
      * ES映射配置列表
+     *
      * @param sourceTable 源表（查询条件）
-     * @param page 页号
-     * @param pageSize 每页条数
+     * @param page        页号
+     * @param pageSize    每页条数
      * @return 列表
      */
     @GetMapping("/search")
-    public Page<ElasticSearchMappingVo> search(@RequestParam(required = false) String sourceTable, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int pageSize){
+    public Page<ElasticSearchMappingVo> search(@RequestParam(required = false) String sourceTable, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int pageSize) {
         return elasticSearchMappingService.search(sourceTable, page, pageSize);
     }
 
     /**
      * 创建索引
+     *
      * @param esSyncConfig 索引定义
      * @return 返回结果
      */
     @PostMapping("/createIndex")
-    public Result createIndex(@RequestBody EsSyncConfig esSyncConfig){
+    public Result createIndex(@RequestBody EsSyncConfig esSyncConfig) {
         boolean success = elasticSearchMappingService.createIndex(esSyncConfig);
-        if(success) {
+        if (success) {
             return new Result(Result.success, "success");
-        }else {
+        } else {
             return new Result(Result.fail, "fail");
         }
     }
 
     /**
      * 快捷创建索引
+     *
      * @param syncDataSourceConfig 数据源
-     * @param esAddr ES地址
-     * @param esIndexManager 是否代管ES
-     * @param indexName 自定义索引名称
+     * @param esAddr               ES地址
+     * @param esIndexManager       是否代管ES
+     * @param indexName            自定义索引名称
      * @return 返回结果
      */
     @PostMapping("/fastCreateIndex")
@@ -94,9 +97,9 @@ public class ElasticSearchController {
             @RequestParam String esAddr,
             @RequestParam(defaultValue = "false") boolean esIndexManager,
             @RequestParam(required = false) String indexName
-    ){
+    ) {
 
-        String index = indexName!=null ? indexName : syncDataSourceConfig.getTable();
+        String index = indexName != null ? indexName : syncDataSourceConfig.getTable();
         // 简化单表索引
         EsSyncConfig esSyncConfig = new EsSyncConfig();
         esSyncConfig.setEsIndexManager(esIndexManager);
@@ -111,63 +114,66 @@ public class ElasticSearchController {
 
         // 创建索引
         boolean success = elasticSearchMappingService.createIndex(esSyncConfig);
-        if(success) {
+        if (success) {
             return new Result(Result.success, "success");
-        }else {
+        } else {
             return new Result(Result.fail, "fail");
         }
     }
 
     /**
      * 初始化数据
+     *
      * @param mappingId 数据同步定义ID
      * @return 返回结果
      */
     @GetMapping("/loadData")
-    public Result loadData(String mappingId){
+    public Result loadData(String mappingId) {
         boolean success = elasticSearchMappingService.loadData(mappingId);
-        if(success) {
+        if (success) {
             return new Result(Result.success, "success");
-        }else {
+        } else {
             return new Result(Result.fail, "fail");
         }
     }
 
     /**
      * 修改同步状态
-     * @param mappingId 数据同步定义ID
+     *
+     * @param mappingId  数据同步定义ID
      * @param syncStatus 是否同步
      * @return
      */
     @GetMapping("/syncStatus")
-    public Result syncStatus(String mappingId, boolean syncStatus){
+    public Result syncStatus(String mappingId, boolean syncStatus) {
         elasticSearchMappingService.updateSyncStatus(mappingId, syncStatus);
         return new Result(Result.success, "success");
     }
 
     /**
      * 查询表映射
+     *
      * @param tables 表列表（[数据源ID.表名]）
      * @return 表结构映射
      */
     @GetMapping("/mapping")
-    public Option<List<EsSyncMappingTable>> getEsMapping(String tables){
+    public Option<List<EsSyncMappingTable>> getEsMapping(String tables) {
         return Option.of(
-            Arrays.stream(tables.split(",")).map(table -> table.split("\\.")).filter(tableInfo -> tableInfo.length==2).map(tableInfo -> {
+                Arrays.stream(tables.split(",")).map(table -> table.split("\\.")).filter(tableInfo -> tableInfo.length == 2).map(tableInfo -> {
 
-                String databaseId = tableInfo[0];
-                String table = tableInfo[1];
+                    String databaseId = tableInfo[0];
+                    String table = tableInfo[1];
 
-                // 查询数据库信息
-                Option<Datasource> database = datasourceService.getDatabase(databaseId);
+                    // 查询数据库信息
+                    Option<Datasource> database = datasourceService.getDatabase(databaseId);
 
-                if(database.nil() || database.error()){
-                    Log.error("数据源不存在！请确认配置信息。database：{}", databaseId);
-                    return null;
-                }
-                // 查询表定义
-                return elasticSearchMappingService.getTableMapping(new SyncDataSourceConfig(database.get().getRds(), database.get().getUrl(), database.get().getDatabase(), table, database.get().getUsername(), database.get().getPassword()));
-            }).collect(Collectors.toList())
+                    if (database.nil() || database.error()) {
+                        Log.error("数据源不存在！请确认配置信息。database：{}", databaseId);
+                        return null;
+                    }
+                    // 查询表定义
+                    return elasticSearchMappingService.getTableMapping(new SyncDataSourceConfig(database.get().getRds(), database.get().getUrl(), database.get().getDatabase(), table, database.get().getUsername(), database.get().getPassword()));
+                }).collect(Collectors.toList())
         );
     }
 

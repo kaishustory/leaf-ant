@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 /**
  * 表定义Dao
+ *
  * @author liguoyang
  * @create 2019-08-07 16:55
  **/
@@ -45,11 +46,12 @@ public class TableDefineDao {
 
     /**
      * 读取表结构定义
+     *
      * @param syncDataSourceConfig
      * @return
      */
     @SneakyThrows
-    public EsSyncMappingTable getTableMapping(SyncDataSourceConfig syncDataSourceConfig){
+    public EsSyncMappingTable getTableMapping(SyncDataSourceConfig syncDataSourceConfig) {
 
         Connection conn = null;
         Statement statement = null;
@@ -65,7 +67,7 @@ public class TableDefineDao {
             conn = jdbcConf.getConn(syncDataSourceConfig);
             // 执行查询
             statement = conn.createStatement();
-            resultSet = statement.executeQuery("select * from "+syncDataSourceConfig.getTable()+" limit 0");
+            resultSet = statement.executeQuery("select * from " + syncDataSourceConfig.getTable() + " limit 0");
             ResultSetMetaData metaData = resultSet.getMetaData();
 
             // 读取字段结构
@@ -77,7 +79,7 @@ public class TableDefineDao {
                 int size = metaData.getColumnDisplaySize(i);
                 mappingFields.add(new EsSyncMappingField(
                         column,
-                        size>0 ? (typeName+"("+size+")").toLowerCase() : typeName.toLowerCase(),
+                        size > 0 ? (typeName + "(" + size + ")").toLowerCase() : typeName.toLowerCase(),
                         type,
                         true,
                         false,
@@ -85,18 +87,24 @@ public class TableDefineDao {
                 ));
             }
             mappingTable.setFieldMapping(mappingFields);
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("数据库查询发生异常！", e);
-        }finally {
-            if(resultSet!=null && !resultSet.isClosed()){ resultSet.close();}
-            if(statement!=null && !statement.isClosed()){ statement.close();}
-            if(conn!=null && !conn.isClosed()){ conn.close();}
+        } finally {
+            if (resultSet != null && !resultSet.isClosed()) {
+                resultSet.close();
+            }
+            if (statement != null && !statement.isClosed()) {
+                statement.close();
+            }
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
         }
 
         // 设置主键
         Set<String> priKeys = queryPriKeys(syncDataSourceConfig);
         mappingTable.getFieldMapping().forEach(field -> {
-            if(priKeys.contains(field.getSourceColumn())){
+            if (priKeys.contains(field.getSourceColumn())) {
                 field.setPrimaryKey(true);
             }
         });
@@ -105,11 +113,12 @@ public class TableDefineDao {
 
     /**
      * 查询表列表
+     *
      * @param syncDataSourceConfig 数据源
      * @return 表列表
      */
     @SneakyThrows
-    public List<String> getTables(SyncDataSourceConfig syncDataSourceConfig){
+    public List<String> getTables(SyncDataSourceConfig syncDataSourceConfig) {
 
         Connection conn = null;
         Statement statement = null;
@@ -124,26 +133,33 @@ public class TableDefineDao {
             statement = conn.createStatement();
             resultSet = statement.executeQuery(String.format("select TABLE_NAME from TABLES where TABLE_SCHEMA = '%s'", syncDataSourceConfig.getDatabase()));
 
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 String table = resultSet.getString(1);
                 tables.add(table);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("数据库查询发生异常！", e);
-        }finally {
-            if(resultSet!=null && !resultSet.isClosed()){ resultSet.close();}
-            if(statement!=null && !statement.isClosed()){ statement.close();}
-            if(conn!=null && !conn.isClosed()){ conn.close();}
+        } finally {
+            if (resultSet != null && !resultSet.isClosed()) {
+                resultSet.close();
+            }
+            if (statement != null && !statement.isClosed()) {
+                statement.close();
+            }
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
         }
         return tables;
     }
 
     /**
      * 查询主键列表
+     *
      * @param dataSourceConfig 数据源配置
      * @return 主键列表
      */
-    private Set<String> queryPriKeys(SyncDataSourceConfig dataSourceConfig){
+    private Set<String> queryPriKeys(SyncDataSourceConfig dataSourceConfig) {
         SyncDataSourceConfig newSource = dataSourceConfig.copy();
         newSource.setDatabase("information_schema");
         newSource.setTable("COLUMNS");
@@ -153,12 +169,13 @@ public class TableDefineDao {
 
     /**
      * 数据查询
+     *
      * @param dataSourceConfig 数据源配置
-     * @param sql SQL
+     * @param sql              SQL
      * @return 数据列表
      */
     @SneakyThrows
-    private List<List<EventColumn>> query(SyncDataSourceConfig dataSourceConfig, String sql){
+    private List<List<EventColumn>> query(SyncDataSourceConfig dataSourceConfig, String sql) {
 
         Connection conn = null;
         Statement statement = null;
@@ -174,7 +191,7 @@ public class TableDefineDao {
 
             // 结果提取转换
             List<List<EventColumn>> rows = new ArrayList<>();
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 List<EventColumn> eventColumnList = new ArrayList<>(metaData.getColumnCount());
                 for (int i = 1; i <= metaData.getColumnCount(); i++) {
                     String column = metaData.getColumnName(i);
@@ -184,39 +201,46 @@ public class TableDefineDao {
                     String value = getColumnValue(type, resultSet, i);
                     eventColumnList.add(new EventColumn(
                             false,
-                            i-1,
+                            i - 1,
                             column,
                             value,
-                            size>0 ? (typeName+"("+size+")").toLowerCase() : typeName.toLowerCase(),
+                            size > 0 ? (typeName + "(" + size + ")").toLowerCase() : typeName.toLowerCase(),
                             type,
                             true,
-                            value==null
+                            value == null
                     ));
                 }
                 rows.add(eventColumnList);
             }
             return rows;
 
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("数据库查询发生异常！", e);
-        }finally {
-            if(resultSet!=null && !resultSet.isClosed()){ resultSet.close();}
-            if(statement!=null && !statement.isClosed()){ statement.close();}
-            if(conn!=null && !conn.isClosed()){ conn.close();}
+        } finally {
+            if (resultSet != null && !resultSet.isClosed()) {
+                resultSet.close();
+            }
+            if (statement != null && !statement.isClosed()) {
+                statement.close();
+            }
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
         }
         return new ArrayList<>();
     }
 
     /**
      * 读取列值
-     * @param type 列类型
+     *
+     * @param type      列类型
      * @param resultSet 数据集
-     * @param i 列下标
+     * @param i         列下标
      * @return 列值
      * @throws SQLException
      */
     private String getColumnValue(int type, ResultSet resultSet, int i) throws SQLException {
-        switch (type){
+        switch (type) {
             case Types.INTEGER:
             case Types.TINYINT:
             case Types.SMALLINT:
@@ -232,13 +256,13 @@ public class TableDefineDao {
                 return resultSet.getString(i);
             case Types.DATE:
                 Date date = resultSet.getDate(i);
-                return date!=null ? DateUtils.toDateString(new java.util.Date(date.getTime())) : null;
+                return date != null ? DateUtils.toDateString(new java.util.Date(date.getTime())) : null;
             case Types.TIME:
                 Time time = resultSet.getTime(i);
-                return time!=null ? DateUtils.toTimeString(new java.util.Date(time.getTime())) : null;
+                return time != null ? DateUtils.toTimeString(new java.util.Date(time.getTime())) : null;
             case Types.TIMESTAMP:
                 Timestamp timestamp = resultSet.getTimestamp(i);
-                return timestamp!=null ? DateUtils.toTimeString(new java.util.Date(timestamp.getTime())) : null;
+                return timestamp != null ? DateUtils.toTimeString(new java.util.Date(timestamp.getTime())) : null;
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.LONGVARCHAR:
