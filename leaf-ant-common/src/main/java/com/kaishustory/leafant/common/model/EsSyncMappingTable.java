@@ -88,116 +88,116 @@ public class EsSyncMappingTable {
     private String esCopyMappingId;
 
 
-
     /**
      * 获得表Key
+     *
      * @return 缓存KEY
      */
-    public String getTableKey(){
+    public String getTableKey() {
         return String.format("%s:%s:%s", sourceRds, sourceDatabase, sourceTable);
     }
 
     /**
      * 获得Redis key
+     *
      * @param id 主键值
      * @return Redis key
      */
-    public String getRedisKey(String id){
+    public String getRedisKey(String id) {
         return redisKeyPrefix + ":" + id;
     }
 
     /**
      * 是否主表（结构树中，根节点就是主表）
-     *
-     *     |      主表
-     *  /  |  \   子表
+     * <p>
+     * |      主表
+     * /  |  \   子表
      * /   |   \  子表 && 叶子子表
-     *
      */
-    public boolean isMaster(){
-        if(config_== null){
+    public boolean isMaster() {
+        if (config_ == null) {
             return isMaster;
-        }else {
+        } else {
             return !isMult() || isMaster;
         }
     }
 
     /**
      * 是否子表（结构树中，非根节点，都是子表）
-     *
-     *     |      主表
-     *  /  |  \   子表
+     * <p>
+     * |      主表
+     * /  |  \   子表
      * /   |   \  子表 && 叶子子表
-     *
      */
-    public boolean isChild(){
-        if(config_== null){
+    public boolean isChild() {
+        if (config_ == null) {
             return !isMaster;
-        }else {
+        } else {
             return isMult() && !isMaster;
         }
     }
 
     /**
      * 是否是叶子子表（结构树中，最末一级节点为页子子表）
-     *
-     *     |      主表
-     *  /  |  \   子表
+     * <p>
+     * |      主表
+     * /  |  \   子表
      * /   |   \  子表 && 叶子子表
-     *
      */
-    public boolean isLeafChild(){
-        if(config_ == null) {
+    public boolean isLeafChild() {
+        if (config_ == null) {
             return (childTable == null || childTable.size() == 0);
-        }else {
+        } else {
             return isMult() && (childTable == null || childTable.size() == 0);
         }
     }
 
     /**
      * 是否是副本子表
+     *
      * @return
      */
-    public boolean isCopyChild(){
+    public boolean isCopyChild() {
         return this.getIndex().startsWith("child:");
     }
 
     /**
      * 写入配置信息
+     *
      * @param syncConfig 配置
      */
-    public void setConfigInfo(EsSyncConfig syncConfig){
+    public void setConfigInfo(EsSyncConfig syncConfig) {
         this.config_ = syncConfig;
     }
 
-    public String getConfigId(){
+    public String getConfigId() {
         return this.config_.getId();
     }
 
-    public boolean isMult(){
+    public boolean isMult() {
         return this.config_.isMult();
     }
 
-    public String getIndex(){
+    public String getIndex() {
         return this.config_.getIndex();
     }
 
-    public String getType(){
+    public String getType() {
         return this.config_.getType();
     }
 
-    public String getEsAddr(){
+    public String getEsAddr() {
         return this.config_.getEsAddr();
     }
 
-    public EsSyncConfig getConfig(){
+    public EsSyncConfig getConfig() {
         return this.config_;
     }
 
     /**
      * 复制
      */
-    public EsSyncMappingTable copy(){
+    public EsSyncMappingTable copy() {
         EsSyncMappingTable copy = new EsSyncMappingTable();
         copy.setRedisMappingId(this.getRedisMappingId());
         copy.setRedisKeyPrefix(this.getRedisKeyPrefix());

@@ -44,87 +44,16 @@ public class ZooOpera {
     }
 
     /**
-     * 记录消费端地址
-     * @param group 分组
-     * @param topic 主题
-     * @param host 服务地址
-     */
-    public void addCousumer(String group, String topic, String host){
-        try {
-            // 检查节点是否已存在
-            if(getCousumerList(group, topic).contains(host)){
-                ZooClient.getClient(addr).delete().forPath(String.format("/ks-basic-message/%s/%s/consumer-node/%s", group, topic, host));
-                log.info("Zookeeper节点已存在，将原节点删除，重新注册。topic：{}，host：{}", topic, host);
-            }
-            ZooClient.getClient(addr).create().creatingParentContainersIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(String.format("/ks-basic-message/%s/%s/consumer-node/%s", group, topic, host), "".getBytes());
-            ZooReconn.add(new ZooRegisterMethod(addr, METHOD_ADD_COUSUMER, group, topic, host));
-            log.info("Zookeeper记录消费端地址成功。Group：{}，Topic：{}, Host：{}", group, topic, host);
-        } catch (Exception e) {
-            log.error("Zookeeper记录消费端地址失败！Group：{}，Topic：{}, Host：{}", group, topic, host, e);
-        }
-    }
-
-    /**
-     * 记录生产端地址
-     * @param group 分组
-     * @param topic 主题
-     * @param host 服务地址
-     */
-    public void addProducer(String group, String topic, String host){
-        try {
-            ZooClient.getClient(addr).create().creatingParentContainersIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(String.format("/ks-basic-message/%s/%s/producer-node/%s", group, topic, host), "".getBytes());
-            ZooReconn.add(new ZooRegisterMethod(addr, METHOD_ADD_PRODUCER, group, topic, host));
-            log.info("Zookeeper记录生产端地址成功。Group：{}，Topic：{}, Host：{}", group, topic, host);
-        } catch (Exception e) {
-            log.error("Zookeeper记录生产端地址失败！Group：{}，Topic：{}, Host：{}", group, topic, host, e);
-        }
-    }
-
-    /**
-     * 读取消费者列表
-     * @param topic 主题
-     * @return 服务列表
-     */
-    public List<String> getCousumerList(String group, String topic){
-        try {
-            return ZooClient.getClient(addr).getChildren().forPath(String.format("/ks-basic-message/%s/%s/consumer-node", group, topic));
-        }catch (KeeperException.NoNodeException e){
-            log.warn("Zookeeper读取消费端地址列表，目前没有服务注册! Group：{}，Topic：{}", group, topic);
-            return new ArrayList<>(0);
-        }catch (Exception e) {
-            log.error("Zookeeper读取消费端地址列表失败！Group：{}，Topic：{}", group, topic, e);
-            return new ArrayList<>(0);
-        }
-    }
-
-    /**
-     * 读取生产者列表
-     * @param topic 主题
-     * @return 服务列表
-     */
-    public List<String> getProducerList(String group, String topic){
-        try {
-            return ZooClient.getClient(addr).getChildren().forPath(String.format("/ks-basic-message/%s/%s/producer-node", group, topic));
-        }catch (KeeperException.NoNodeException e){
-            log.warn("Zookeeper读取生产端地址列表，目前没有服务注册! Group：{}，Topic：{}", group, topic);
-            return new ArrayList<>(0);
-        } catch (Exception e) {
-            log.error("Zookeeper读取生产端地址列表失败！Group：{}，Topic：{}", group, topic, e);
-            return new ArrayList<>(0);
-        }
-    }
-
-    /**
      * 获得局域网地址
      */
     public static Optional<InetAddress> getLocalHostLANAddress() {
         try {
             InetAddress candidateAddress = null;
             // 遍历所有的网络接口
-            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
+            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
                 NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
                 // 在所有的接口下再遍历IP
-                for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements();) {
+                for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
                     InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
                     if (!inetAddr.isLoopbackAddress()) {// 排除loopback类型地址
                         if (inetAddr.isSiteLocalAddress()) {
@@ -147,8 +76,83 @@ public class ZooOpera {
             }
             return Optional.of(jdkSuppliedAddress);
         } catch (Exception e) {
-            log.error("获得网络IP地址发生异常!",e);
+            log.error("获得网络IP地址发生异常!", e);
             return Optional.empty();
+        }
+    }
+
+    /**
+     * 记录消费端地址
+     *
+     * @param group 分组
+     * @param topic 主题
+     * @param host  服务地址
+     */
+    public void addCousumer(String group, String topic, String host) {
+        try {
+            // 检查节点是否已存在
+            if (getCousumerList(group, topic).contains(host)) {
+                ZooClient.getClient(addr).delete().forPath(String.format("/ks-basic-message/%s/%s/consumer-node/%s", group, topic, host));
+                log.info("Zookeeper节点已存在，将原节点删除，重新注册。topic：{}，host：{}", topic, host);
+            }
+            ZooClient.getClient(addr).create().creatingParentContainersIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(String.format("/ks-basic-message/%s/%s/consumer-node/%s", group, topic, host), "".getBytes());
+            ZooReconn.add(new ZooRegisterMethod(addr, METHOD_ADD_COUSUMER, group, topic, host));
+            log.info("Zookeeper记录消费端地址成功。Group：{}，Topic：{}, Host：{}", group, topic, host);
+        } catch (Exception e) {
+            log.error("Zookeeper记录消费端地址失败！Group：{}，Topic：{}, Host：{}", group, topic, host, e);
+        }
+    }
+
+    /**
+     * 记录生产端地址
+     *
+     * @param group 分组
+     * @param topic 主题
+     * @param host  服务地址
+     */
+    public void addProducer(String group, String topic, String host) {
+        try {
+            ZooClient.getClient(addr).create().creatingParentContainersIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(String.format("/ks-basic-message/%s/%s/producer-node/%s", group, topic, host), "".getBytes());
+            ZooReconn.add(new ZooRegisterMethod(addr, METHOD_ADD_PRODUCER, group, topic, host));
+            log.info("Zookeeper记录生产端地址成功。Group：{}，Topic：{}, Host：{}", group, topic, host);
+        } catch (Exception e) {
+            log.error("Zookeeper记录生产端地址失败！Group：{}，Topic：{}, Host：{}", group, topic, host, e);
+        }
+    }
+
+    /**
+     * 读取消费者列表
+     *
+     * @param topic 主题
+     * @return 服务列表
+     */
+    public List<String> getCousumerList(String group, String topic) {
+        try {
+            return ZooClient.getClient(addr).getChildren().forPath(String.format("/ks-basic-message/%s/%s/consumer-node", group, topic));
+        } catch (KeeperException.NoNodeException e) {
+            log.warn("Zookeeper读取消费端地址列表，目前没有服务注册! Group：{}，Topic：{}", group, topic);
+            return new ArrayList<>(0);
+        } catch (Exception e) {
+            log.error("Zookeeper读取消费端地址列表失败！Group：{}，Topic：{}", group, topic, e);
+            return new ArrayList<>(0);
+        }
+    }
+
+    /**
+     * 读取生产者列表
+     *
+     * @param topic 主题
+     * @return 服务列表
+     */
+    public List<String> getProducerList(String group, String topic) {
+        try {
+            return ZooClient.getClient(addr).getChildren().forPath(String.format("/ks-basic-message/%s/%s/producer-node", group, topic));
+        } catch (KeeperException.NoNodeException e) {
+            log.warn("Zookeeper读取生产端地址列表，目前没有服务注册! Group：{}，Topic：{}", group, topic);
+            return new ArrayList<>(0);
+        } catch (Exception e) {
+            log.error("Zookeeper读取生产端地址列表失败！Group：{}，Topic：{}", group, topic, e);
+            return new ArrayList<>(0);
         }
     }
 }

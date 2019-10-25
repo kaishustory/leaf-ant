@@ -71,35 +71,40 @@ public class EsMappingCache {
      * 初始化
      */
     @PostConstruct
-    public void init(){
+    public void init() {
         // 加载映射配置
         loadMapping(true);
     }
 
     /**
      * 加载ES映射配置
+     *
      * @param init 系统启动加载
      */
-    public void loadMapping(boolean init){
+    public void loadMapping(boolean init) {
         Time time = new Time("Mongo加载ES映射配置");
         try {
-            if(init) { readWriteLock.writeLock().lock(); }
+            if (init) {
+                readWriteLock.writeLock().lock();
+            }
             // 查询全部有效映射表 <RDS:DATABASE:TABLE, MappingTable>
             Map<String, List<EsSyncMappingTable>> allMappingTable = mappingDao.findSyncMapping(filterSync).stream().collect(Collectors.groupingBy(m -> getCacheKey(m.getSourceRds(), m.getSourceDatabase(), m.getSourceTable())));
 
             // 查询全部映射配置 <ID, MappingConfig>
-            Map<String,EsSyncConfig> allConfig = mappingDao.findAllMapping().stream().collect(Collectors.toMap(EsSyncConfig::getId, m -> m));
+            Map<String, EsSyncConfig> allConfig = mappingDao.findAllMapping().stream().collect(Collectors.toMap(EsSyncConfig::getId, m -> m));
 
-            if(!init) { readWriteLock.writeLock().lock(); }
+            if (!init) {
+                readWriteLock.writeLock().lock();
+            }
 
             esMappingTableCache.invalidateAll();
             esMappingConfigCache.invalidateAll();
             esMappingTableCache.putAll(allMappingTable);
             esMappingConfigCache.putAll(allConfig);
 
-        }catch (Throwable t){
+        } catch (Throwable t) {
             Log.info("ES配置加载发生异常！", t);
-        }finally {
+        } finally {
             readWriteLock.writeLock().unlock();
         }
         time.end();
@@ -107,55 +112,58 @@ public class EsMappingCache {
 
     /**
      * 读取ES映射结构列表
+     *
      * @param mappingId 映射ID（仅同步事件使用）
-     * @param table 表
+     * @param table     表
      * @return ES映射结构列表
      */
-    public Option<List<EsSyncMappingTable>> getMapping(String mappingId, String table){
+    public Option<List<EsSyncMappingTable>> getMapping(String mappingId, String table) {
         try {
             readWriteLock.readLock().lock();
 
             EsSyncConfig esSyncConfig = esMappingConfigCache.getIfPresent(mappingId);
-            if(esSyncConfig!=null && (esSyncConfig.isSync() || !filterSync)){
+            if (esSyncConfig != null && (esSyncConfig.isSync() || !filterSync)) {
                 return Option.of(esSyncConfig.getTableList().stream().filter(tableInfo -> tableInfo.getSourceTable().equals(table)).collect(Collectors.toList()));
-            }else {
+            } else {
                 return Option.empty();
             }
 
-        }finally {
+        } finally {
             readWriteLock.readLock().unlock();
         }
     }
 
     /**
      * 读取ES映射结构列表
-     * @param rds 实例
+     *
+     * @param rds      实例
      * @param database 数据库
-     * @param table 表
+     * @param table    表
      * @return ES映射结构列表
      */
-    public Option<List<EsSyncMappingTable>> getMapping(String rds, String database, String table){
+    public Option<List<EsSyncMappingTable>> getMapping(String rds, String database, String table) {
         try {
             readWriteLock.readLock().lock();
             List<EsSyncMappingTable> mapping = esMappingTableCache.getIfPresent(getCacheKey(rds, database, table));
-            if (mapping != null && mapping.size()>0) {
+            if (mapping != null && mapping.size() > 0) {
                 return Option.of(mapping);
             } else {
                 return Option.empty();
             }
-        }finally {
+        } finally {
             readWriteLock.readLock().unlock();
         }
     }
 
     /**
      * 获得缓存KEY
-     * @param rds 实例
+     *
+     * @param rds      实例
      * @param database 数据库
-     * @param table 表
+     * @param table    表
      * @return 缓存KEY
      */
-    private String getCacheKey(String rds, String database, String table){
+    private String getCacheKey(String rds, String database, String table) {
         return String.format("%s:%s:%s", rds, database, table);
     }
 }

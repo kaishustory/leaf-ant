@@ -67,19 +67,7 @@ public class Page<T> implements Serializable {
         this.totalCount = totalCount;
         this.currPage = currPage;
         this.pageSize = pageSize;
-        this.totalPage = (int) Math.ceil(totalCount/ (float) pageSize);
-    }
-
-    /**
-     * 分页结果
-     * @param result 列表内容
-     * @param totalCount 总条数
-     * @param currPage 当前页号
-     * @param pageSize 每页条数
-     * @return 分页结果
-     */
-    public static <T> Page<T> of(List<T> result, int totalCount, int currPage, int pageSize){
-        return new Page<T>(result, totalCount, currPage, pageSize);
+        this.totalPage = (int) Math.ceil(totalCount / (float) pageSize);
     }
 
     private Page(int errcode, String errmsg) {
@@ -88,42 +76,57 @@ public class Page<T> implements Serializable {
     }
 
     /**
+     * 分页结果
+     *
+     * @param result     列表内容
+     * @param totalCount 总条数
+     * @param currPage   当前页号
+     * @param pageSize   每页条数
+     * @return 分页结果
+     */
+    public static <T> Page<T> of(List<T> result, int totalCount, int currPage, int pageSize) {
+        return new Page<T>(result, totalCount, currPage, pageSize);
+    }
+
+    /**
      * 创建异常对象
+     *
      * @param errcode 异常代码
-     * @param errmsg 异常说明
+     * @param errmsg  异常说明
      * @return 异常返回结果
      */
-    public static <T> Page<T> error(int errcode, String errmsg){
+    public static <T> Page<T> error(int errcode, String errmsg) {
         return new Page<T>(errcode, errmsg);
     }
 
     /**
      * 创建异常对象
+     *
      * @param errmsg 异常说明
      * @return 异常返回结果
      */
-    public static <T> Page<T> error(String errmsg){
+    public static <T> Page<T> error(String errmsg) {
         return new Page<T>(-1, errmsg);
     }
 
     /**
      * 是否有内容
      */
-    public boolean exist(){
-        return result!=null;
+    public boolean exist() {
+        return result != null;
     }
 
     /**
      * 是否无内容
      */
-    public boolean nil(){
+    public boolean nil() {
         return !exist();
     }
 
     /**
      * 是否错误
      */
-    public boolean error(){
-        return errcode!=0||errmsg!=null;
+    public boolean error() {
+        return errcode != 0 || errmsg != null;
     }
 }

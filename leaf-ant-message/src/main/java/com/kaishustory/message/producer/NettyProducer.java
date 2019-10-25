@@ -16,7 +16,6 @@ import com.kaishustory.message.common.model.RpcDecoder;
 import com.kaishustory.message.common.model.RpcEncoder;
 import com.kaishustory.message.common.model.RpcRequest;
 import com.kaishustory.message.common.model.RpcResponse;
-import com.kaishustory.message.common.zookeeper.ZooOpera;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -82,6 +81,7 @@ public class NettyProducer {
 
     /**
      * 创建连接
+     *
      * @param host 地址
      * @param port 端口
      * @throws ConnectException
@@ -92,14 +92,15 @@ public class NettyProducer {
 
     /**
      * 创建连接
-     * @param host 地址
-     * @param port 端口
+     *
+     * @param host        地址
+     * @param port        端口
      * @param reconnCount 重连次数
      * @throws ConnectException
      */
     protected void createClient(String host, int port, int reconnCount) throws ConnectException {
         try {
-            if(destroy){
+            if (destroy) {
                 log.info("连接已被销毁！addr：{}:{}", host, port);
                 return;
             }
@@ -138,7 +139,7 @@ public class NettyProducer {
 
             this.channel = future.channel();
 
-        }catch (Exception t){
+        } catch (Exception t) {
             log.error("创建服务器连接发生异常！addr：{}:{}", host, port, t);
             try {
                 //关闭线程组
@@ -147,13 +148,16 @@ public class NettyProducer {
                 e.printStackTrace();
             }
             connected = false;
-            if(reconnCount <= 180) {
-                try { Thread.sleep(1000); } catch (InterruptedException ignored) { }
+            if (reconnCount <= 180) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
+                }
                 // 1秒后重新连接
                 log.info("尝试重连服务器 addr：{}:{}", host, port);
                 // 重新创建连接
                 createClient(host, port, ++reconnCount);
-            }else {
+            } else {
                 throw new ConnectTimeoutException("连接远程消息服务失败！");
             }
         }
@@ -161,20 +165,21 @@ public class NettyProducer {
 
     /**
      * 发送消息
+     *
      * @param request 消息
      * @return 发送成功
      */
-    public boolean send(RpcRequest request){
+    public boolean send(RpcRequest request) {
         try {
-            if(connected) {
+            if (connected) {
                 channel.writeAndFlush(request);
                 log.info("send msg. host：{}, port：{}，request：{}", host, port, request);
                 return true;
-            }else {
+            } else {
                 log.error("client is suspend. host：{}, port：{}，request：{}", host, port, request);
                 return false;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("send error. host：{}, port：{}，request：{}", host, port, request, e);
             return false;
         }
@@ -182,23 +187,24 @@ public class NettyProducer {
 
     /**
      * 发送消息（回复处理）
-     * @param request 消息
+     *
+     * @param request  消息
      * @param callback 消息回复处理
      * @return 发送成功
      */
-    public boolean sendCallback(RpcRequest request, MessageCallback callback){
+    public boolean sendCallback(RpcRequest request, MessageCallback callback) {
         try {
-            if(connected) {
+            if (connected) {
                 channel.writeAndFlush(request);
                 // 注册回调事件
                 callbackServer.register(request.getMsgId(), callback);
                 log.info("send msg. host：{}, port：{}，request：{}", host, port, request);
                 return true;
-            }else {
+            } else {
                 log.error("client is suspend. host：{}, port：{}，request：{}", host, port, request);
                 return false;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("send error. host：{}, port：{}，request：{}", host, port, request, e);
             return false;
         }
@@ -207,13 +213,13 @@ public class NettyProducer {
     /**
      * 销毁连接
      */
-    public void destroy(){
+    public void destroy() {
         destroy = true;
-        if(channel!=null && channel.isOpen()){
+        if (channel != null && channel.isOpen()) {
             // 关闭通道
             channel.close();
         }
-        if(group!=null ){
+        if (group != null) {
             try {
                 //关闭线程组
                 group.shutdownGracefully().sync();
@@ -238,7 +244,7 @@ public class NettyProducer {
         return destroy;
     }
 
-    public String getAddr(){
-        return host+":"+port;
+    public String getAddr() {
+        return host + ":" + port;
     }
 }

@@ -43,7 +43,7 @@ public class ConsumerHandler extends ChannelInboundHandlerAdapter {
         log.info("client msg：" + request.toString());
         // 消息处理
         RpcResponse response = messageHandler.handler(request);
-        if(response!=null && response.getStatus()!=0){
+        if (response != null && response.getStatus() != 0) {
             // 回复消息，使用请求时的ID
             response.setId(request.getMsgId());
             // 回复消息

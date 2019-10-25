@@ -18,6 +18,7 @@ import com.kaishustory.leafant.common.utils.Option;
 
 /**
  * 映射管理接口
+ *
  * @author liguoyang
  * @create 2019-09-10 18:11
  **/
@@ -25,12 +26,14 @@ public interface IMappingService {
 
     /**
      * 更改已初始化状态
+     *
      * @param loadStatus 状态
      */
     void updateInitialized(LoadStatus loadStatus);
 
     /**
      * 更新同步状态
+     *
      * @param syncStatus 同步状态
      * @return 是否成功
      */

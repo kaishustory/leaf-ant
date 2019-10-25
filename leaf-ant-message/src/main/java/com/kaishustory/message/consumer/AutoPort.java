@@ -29,12 +29,13 @@ public class AutoPort {
 
     /**
      * 自动寻找可用端口
+     *
      * @return 端口
      */
-    public static int get(){
+    public static int get() {
         synchronized (AutoPort.class) {
             for (int port = 2000; port < 26000; port++) {
-                if(!bindPort.contains(port)) {
+                if (!bindPort.contains(port)) {
                     try {
                         Socket socket = new Socket("127.0.0.1", port);
                         socket.close();

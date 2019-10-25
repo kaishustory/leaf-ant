@@ -41,10 +41,11 @@ public class NettyConsumer {
 
     /**
      * 建立服务器
-     * @param group 分组
-     * @param topic 主题
-     * @param port 端口
-     * @param zoo_addr Zookeeper地址
+     *
+     * @param group          分组
+     * @param topic          主题
+     * @param port           端口
+     * @param zoo_addr       Zookeeper地址
      * @param messageHandler 消息处理
      */
     public NettyConsumer(String group, String topic, int port, String zoo_addr, MessageHandler messageHandler) {
@@ -53,9 +54,10 @@ public class NettyConsumer {
 
     /**
      * 建立服务器
-     * @param group 分组
-     * @param topic 主题
-     * @param zoo_addr Zookeeper地址
+     *
+     * @param group          分组
+     * @param topic          主题
+     * @param zoo_addr       Zookeeper地址
      * @param messageHandler 消息处理
      */
     public NettyConsumer(String group, String topic, String zoo_addr, MessageHandler messageHandler) {
@@ -64,9 +66,10 @@ public class NettyConsumer {
 
     /**
      * 建立服务器
-     * @param topic 主题
-     * @param port 端口
-     * @param zoo_addr Zookeeper地址
+     *
+     * @param topic          主题
+     * @param port           端口
+     * @param zoo_addr       Zookeeper地址
      * @param messageHandler 消息处理
      */
     public NettyConsumer(String topic, int port, String zoo_addr, MessageHandler messageHandler) {
@@ -75,8 +78,9 @@ public class NettyConsumer {
 
     /**
      * 建立服务器
-     * @param topic 主题
-     * @param zoo_addr Zookeeper地址
+     *
+     * @param topic          主题
+     * @param zoo_addr       Zookeeper地址
      * @param messageHandler 消息处理
      */
     public NettyConsumer(String topic, String zoo_addr, MessageHandler messageHandler) {
@@ -85,11 +89,12 @@ public class NettyConsumer {
 
     /**
      * 建立服务器
-     * @param group 分组
-     * @param topic 主题
-     * @param port 端口
+     *
+     * @param group          分组
+     * @param topic          主题
+     * @param port           端口
      * @param messageHandler 消息处理
-     * @param zoo_addr Zookeeper地址
+     * @param zoo_addr       Zookeeper地址
      */
     private void bind(String group, String topic, int port, String zoo_addr, MessageHandler messageHandler) {
         Thread thread = new Thread(() -> {
@@ -117,7 +122,7 @@ public class NettyConsumer {
                 if (future.isSuccess()) {
                     // 注册消费者地址
                     ZooOpera zooOpera = new ZooOpera(zoo_addr);
-                    zooOpera.addCousumer(group, topic, ZooOpera.getLocalHostLANAddress().get().getHostAddress()+":"+port);
+                    zooOpera.addCousumer(group, topic, ZooOpera.getLocalHostLANAddress().get().getHostAddress() + ":" + port);
 
                     log.info("消费端启动成功 Group：{} Topic：{}", group, topic);
                 } else {
@@ -129,7 +134,7 @@ public class NettyConsumer {
                 //成功绑定到端口之后,给channel增加一个 管道关闭的监听器并同步阻塞,直到channel关闭,线程才会往下执行,结束进程。
                 future.channel().closeFuture().sync();
                 log.info("消费端关闭 Group：{} Topic：{}", group, topic);
-            }catch (Exception e){
+            } catch (Exception e) {
                 log.error("消费端启动异常! Group：{} Topic：{}", group, topic, e);
             }
         });

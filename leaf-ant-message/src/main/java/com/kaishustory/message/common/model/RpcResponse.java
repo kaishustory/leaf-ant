@@ -23,6 +23,43 @@ import lombok.Data;
 @Data
 public class RpcResponse {
 
+    /**
+     * 不回复
+     */
+    public static RpcResponse NO_REPLY = new RpcResponse("NO_REPLY", null, 0);
+    /**
+     * 成功消息
+     */
+    public static int STATUS_SUCCESS = 1;
+    /**
+     * 失败失败
+     */
+    public static int STATUS_FAIL = -1;
+    /**
+     * 推送消息
+     */
+    public static int STATUS_PUSH = 2;
+    /**
+     * 消息ID
+     */
+    private String id;
+    /**
+     * 消息类型（动作类型）
+     */
+    private String action;
+    /**
+     * 消息内容
+     */
+    private String data;
+    /**
+     * 响应状态（1：成功，-1：失败，2：推送）
+     */
+    private int status;
+    /**
+     * 异常信息
+     */
+    private String errmsg;
+
     public RpcResponse() {
     }
 
@@ -40,60 +77,15 @@ public class RpcResponse {
     /**
      * 失败响应
      */
-    public static RpcResponse errorResponse(String errmsg){
+    public static RpcResponse errorResponse(String errmsg) {
         return new RpcResponse(STATUS_FAIL, errmsg);
     }
 
     /**
      * 是否成功
      */
-    public boolean success(){
+    public boolean success() {
         return status == STATUS_SUCCESS;
     }
-
-    /**
-     * 消息ID
-     */
-    private String id;
-
-    /**
-     * 消息类型（动作类型）
-     */
-    private String action;
-
-    /**
-     * 消息内容
-     */
-    private String data;
-
-    /**
-     * 响应状态（1：成功，-1：失败，2：推送）
-     */
-    private int status;
-
-    /**
-     * 异常信息
-     */
-    private String errmsg;
-
-    /**
-     * 不回复
-     */
-    public static RpcResponse NO_REPLY = new RpcResponse("NO_REPLY", null, 0);
-
-    /**
-     * 成功消息
-     */
-    public static int STATUS_SUCCESS = 1;
-
-    /**
-     * 失败失败
-     */
-    public static int STATUS_FAIL = -1;
-
-    /**
-     * 推送消息
-     */
-    public static int STATUS_PUSH = 2;
 
 }

@@ -26,6 +26,23 @@ import java.util.List;
 @Data
 public class Stats {
 
+    /**
+     * 消息ID
+     */
+    private String msgId;
+    /**
+     * 分组
+     */
+    private String group;
+    /**
+     * 主题
+     */
+    private String topic;
+    /**
+     * 客户端状态列表
+     */
+    private List<ConsumerStats> consumerStats = new ArrayList<>();
+
     public Stats() {
     }
 
@@ -37,37 +54,26 @@ public class Stats {
     }
 
     /**
-     * 消息ID
-     */
-    private String msgId;
-
-    /**
-     * 分组
-     */
-    private String group;
-
-    /**
-     * 主题
-     */
-    private String topic;
-
-    /**
-     * 客户端状态列表
-     */
-    private List<ConsumerStats> consumerStats = new ArrayList<>();
-
-    /**
      * 是否全部发送成功
      */
-    public boolean success(){
-        return consumerStats.stream().map(ConsumerStats::isSend).reduce((s1,s2) -> s1 && s2).orElse(false);
+    public boolean success() {
+        return consumerStats.stream().map(ConsumerStats::isSend).reduce((s1, s2) -> s1 && s2).orElse(false);
     }
 
     /**
      * 客户端状态
      */
     @Data
-    public static class ConsumerStats{
+    public static class ConsumerStats {
+
+        /**
+         * 客户端地址
+         */
+        private String addr;
+        /**
+         * 是否发送成功
+         */
+        private boolean send;
 
         public ConsumerStats() {
         }
@@ -76,16 +82,6 @@ public class Stats {
             this.addr = addr;
             this.send = send;
         }
-
-        /**
-         * 客户端地址
-         */
-        private String addr;
-
-        /**
-         * 是否发送成功
-         */
-        private boolean send;
 
     }
 }

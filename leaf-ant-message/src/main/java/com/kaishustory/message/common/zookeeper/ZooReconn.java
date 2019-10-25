@@ -23,6 +23,7 @@ import static com.kaishustory.message.common.constants.MessageConstants.METHOD_A
 
 /**
  * Zookeeper 重连处理
+ *
  * @author liguoyang
  * @create 2019-08-08 12:03
  **/
@@ -32,21 +33,22 @@ public class ZooReconn {
     /**
      * 注册方法列表
      */
-    private static Set<ZooRegisterMethod> methods = Sets.newConcurrentHashSet();;
+    private static Set<ZooRegisterMethod> methods = Sets.newConcurrentHashSet();
+    ;
 
     /**
      * 重连处理
      */
-    public static void reconn(){
+    public static void reconn() {
         methods.forEach(method -> {
             ZooOpera zooOpera = new ZooOpera(method.getZooAddr());
-            if(METHOD_ADD_COUSUMER.equals(method.getMethod())){
+            if (METHOD_ADD_COUSUMER.equals(method.getMethod())) {
                 zooOpera.addCousumer(method.getGroup(), method.getTopic(), method.getHost());
                 log.info("重新注册消费者：Group：{}，Topic：{}，Host：{}", method.getGroup(), method.getTopic(), method.getHost());
-            }else if(METHOD_ADD_PRODUCER.equals(method.getMethod())){
+            } else if (METHOD_ADD_PRODUCER.equals(method.getMethod())) {
                 zooOpera.addProducer(method.getGroup(), method.getTopic(), method.getHost());
                 log.info("重新注册生产者：Group：{}，Topic：{}，Host：{}", method.getGroup(), method.getTopic(), method.getHost());
-            }else {
+            } else {
                 log.error("不支持的方法：{}", method.getMethod());
             }
         });
@@ -54,10 +56,11 @@ public class ZooReconn {
 
     /**
      * 记录注册方法
+     *
      * @param method 方法
      */
-    public static void add(ZooRegisterMethod method){
-        if(!methods.contains(method)) {
+    public static void add(ZooRegisterMethod method) {
+        if (!methods.contains(method)) {
             methods.add(method);
             if (methods.contains(method)) {
                 log.info("记录注册节点：Method：{}，Group：{}，Topic：{}，Host：{}", method.getMethod(), method.getGroup(), method.getTopic(), method.getHost());

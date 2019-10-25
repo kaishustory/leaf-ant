@@ -25,6 +25,7 @@ public interface MessageHandler {
 
     /**
      * 消息处理
+     *
      * @param request 消息请求
      * @return 回复消息
      */

@@ -79,11 +79,12 @@ public class SyncMessageListener {
 
     /**
      * 配置同步消息处理
+     *
      * @return
      */
     @Bean(name = "syncMessageConsumerObject")
     @ConditionalOnProperty(name = "message.mapping.sync", havingValue = "true")
-    public NettyConsumer createSyncMessageConsumer(){
+    public NettyConsumer createSyncMessageConsumer() {
 
         // 监听同步映射配置消息
         NettyConsumer consumer = new NettyConsumer(messageGroup, messageTopic, zookeeper, rpcRequest -> {

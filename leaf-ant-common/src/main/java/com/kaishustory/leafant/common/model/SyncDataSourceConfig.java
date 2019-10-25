@@ -25,6 +25,31 @@ import java.util.Objects;
 @Data
 public class SyncDataSourceConfig {
 
+    /**
+     * 数据实例名称
+     */
+    private String rds;
+    /**
+     * 数据库地址（ip:port）
+     */
+    private String url;
+    /**
+     * 数据库
+     */
+    private String database;
+    /**
+     * 表名
+     */
+    private String table;
+    /**
+     * 用户名
+     */
+    private String username;
+    /**
+     * 密码
+     */
+    private String password;
+
     public SyncDataSourceConfig() {
     }
 
@@ -37,37 +62,7 @@ public class SyncDataSourceConfig {
         this.password = password;
     }
 
-    /**
-     * 数据实例名称
-     */
-    private String rds;
-
-    /**
-     * 数据库地址（ip:port）
-     */
-    private String url;
-
-    /**
-     * 数据库
-     */
-    private String database;
-
-    /**
-     * 表名
-     */
-    private String table;
-
-    /**
-     * 用户名
-     */
-    private String username;
-
-    /**
-     * 密码
-     */
-    private String password;
-
-    public SyncDataSourceConfig copy(){
+    public SyncDataSourceConfig copy() {
         return new SyncDataSourceConfig(rds, url, database, table, username, password);
     }
 

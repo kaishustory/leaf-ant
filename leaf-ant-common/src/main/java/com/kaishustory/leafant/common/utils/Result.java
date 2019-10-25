@@ -23,40 +23,6 @@ import lombok.Data;
 @Data
 public class Result {
 
-    // 错误码
-    private Integer errcode = 0;
-
-    // 错误信息
-    private String errmsg;
-
-    // 返回结果
-    private Object result;
-
-
-    /**
-     * 返回错误信息
-     * @param errcode 错误码
-     * @param errmsg 错误信息
-     */
-    public Result (Integer errcode, String errmsg){
-        this.errcode = errcode;
-        this.errmsg = errmsg;
-    }
-    /**
-     * 返回结果信息
-     * @param errcode 错误码
-     * @param result 返回结果
-     */
-    public Result(Integer errcode, Object result){
-        this.errcode = errcode;
-        this.result = result;
-    }
-
-    @Override
-    public String toString() {
-        return JsonUtils.toJson(this);
-    }
-
     /**
      * 处理成功
      */
@@ -65,4 +31,37 @@ public class Result {
      * 处理失败
      */
     public static int fail = -1;
+    // 错误码
+    private Integer errcode = 0;
+    // 错误信息
+    private String errmsg;
+    // 返回结果
+    private Object result;
+
+    /**
+     * 返回错误信息
+     *
+     * @param errcode 错误码
+     * @param errmsg  错误信息
+     */
+    public Result(Integer errcode, String errmsg) {
+        this.errcode = errcode;
+        this.errmsg = errmsg;
+    }
+
+    /**
+     * 返回结果信息
+     *
+     * @param errcode 错误码
+     * @param result  返回结果
+     */
+    public Result(Integer errcode, Object result) {
+        this.errcode = errcode;
+        this.result = result;
+    }
+
+    @Override
+    public String toString() {
+        return JsonUtils.toJson(this);
+    }
 }

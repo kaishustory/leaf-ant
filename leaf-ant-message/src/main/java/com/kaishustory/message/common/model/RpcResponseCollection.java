@@ -26,6 +26,19 @@ import java.util.List;
 @Data
 public class RpcResponseCollection {
 
+    /**
+     * 消费者数量
+     */
+    private int consumerSize;
+    /**
+     * 响应结果
+     */
+    private List<RpcResponse> responses = new ArrayList<>();
+    /**
+     * 异常信息
+     */
+    private String errmsg;
+
     public RpcResponseCollection(int consumerSize, List<RpcResponse> responses) {
         this.consumerSize = consumerSize;
         this.responses = responses;
@@ -38,24 +51,9 @@ public class RpcResponseCollection {
     }
 
     /**
-     * 消费者数量
-     */
-    private int consumerSize;
-
-    /**
-     * 响应结果
-     */
-    private List<RpcResponse> responses = new ArrayList<>();
-
-    /**
-     * 异常信息
-     */
-    private String errmsg;
-
-    /**
      * 是否全部成功
      */
-    public boolean success(){
+    public boolean success() {
         return consumerSize == getSuccessSize();
     }
 
@@ -63,14 +61,14 @@ public class RpcResponseCollection {
     /**
      * 成功数量
      */
-    public int getSuccessSize(){
+    public int getSuccessSize() {
         return Long.valueOf(responses.stream().filter(RpcResponse::success).count()).intValue();
     }
 
     /**
      * 失败数量
      */
-    public int getFailSize(){
+    public int getFailSize() {
         return Long.valueOf(responses.stream().filter(response -> !response.success()).count()).intValue();
     }
 }

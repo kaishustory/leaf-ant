@@ -89,31 +89,14 @@ public class EsSyncMappingField {
      * 关联主表ES字段【子表字段】
      */
     private String joinMasterEsField;
-
-    /**
-     * 关联主表ES字段名称【子表字段】
-     */
-    public String getJoinMasterEsFieldName(){
-        return joinMasterEsField.split("\\.")[1];
-    }
     /**
      * 是否同步
      */
     private boolean sync = true;
-
     /**
      * 外键关联ES字段（外键必须为主表主键）
      */
     private String foreignField;
-
-    public String getEsTypeName(){
-        if(esTypeName==null){
-            esTypeName = getEsType(type, analyzer);
-        }
-        return esTypeName;
-    }
-
-
 
     public EsSyncMappingField() {
     }
@@ -127,6 +110,7 @@ public class EsSyncMappingField {
         this.sourceColumn = sourceColumn;
         this.esTypeName = getEsType(type, analyzer);
     }
+
 
     public EsSyncMappingField(String field, String typeName, int type, boolean index, boolean analyzer, String sourceColumn, boolean primaryKey, boolean foreignKey, String foreignField) {
         this.field = field;
@@ -142,13 +126,28 @@ public class EsSyncMappingField {
     }
 
     /**
+     * 关联主表ES字段名称【子表字段】
+     */
+    public String getJoinMasterEsFieldName() {
+        return joinMasterEsField.split("\\.")[1];
+    }
+
+    public String getEsTypeName() {
+        if (esTypeName == null) {
+            esTypeName = getEsType(type, analyzer);
+        }
+        return esTypeName;
+    }
+
+    /**
      * 转换Es类型
-     * @param type 列类型
+     *
+     * @param type     列类型
      * @param analyzer 是否分词
      * @return Es类型
      */
     private String getEsType(int type, boolean analyzer) {
-        switch (type){
+        switch (type) {
             case Types.INTEGER:
             case Types.TINYINT:
             case Types.SMALLINT:
@@ -170,7 +169,7 @@ public class EsSyncMappingField {
             case Types.VARCHAR:
             case Types.LONGVARCHAR:
             default:
-                return analyzer?"text":"keyword";
+                return analyzer ? "text" : "keyword";
         }
     }
 }

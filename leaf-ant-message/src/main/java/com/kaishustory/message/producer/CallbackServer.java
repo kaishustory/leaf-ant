@@ -36,25 +36,27 @@ public class CallbackServer {
 
     /**
      * 注册回调事件
-     * @param msgId 消息ID
+     *
+     * @param msgId    消息ID
      * @param callback 回调事件
      */
-    public void register(String msgId, MessageCallback callback){
+    public void register(String msgId, MessageCallback callback) {
         callbackCache.put(msgId, callback);
     }
 
     /**
      * 回复事件
-     * @param msgId 消息ID
+     *
+     * @param msgId    消息ID
      * @param response 回复内容
      */
-    public void reply(String msgId, RpcResponse response){
-        if(msgId == null){
+    public void reply(String msgId, RpcResponse response) {
+        if (msgId == null) {
             throw new RuntimeException("reply message id is null");
         }
         // 获得回调事件
         MessageCallback callback = callbackCache.getIfPresent(msgId);
-        if(callback!=null){
+        if (callback != null) {
             // 回调消息
             callback.callback(response);
             // 删除回调处理

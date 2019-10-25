@@ -25,6 +25,27 @@ import java.util.Objects;
 @Data
 public class ZooRegisterMethod {
 
+    /**
+     * Zookeeper地址
+     */
+    private String zooAddr;
+    /**
+     * 方法
+     */
+    private String method;
+    /**
+     * 集群分组
+     */
+    private String group;
+    /**
+     * 消息主题
+     */
+    private String topic;
+    /**
+     * 服务地址
+     */
+    private String host;
+
     public ZooRegisterMethod() {
     }
 
@@ -35,31 +56,6 @@ public class ZooRegisterMethod {
         this.topic = topic;
         this.host = host;
     }
-
-    /**
-     * Zookeeper地址
-     */
-    private String zooAddr;
-
-    /**
-     * 方法
-     */
-    private String method;
-
-    /**
-     * 集群分组
-     */
-    private String group;
-
-    /**
-     * 消息主题
-     */
-    private String topic;
-
-    /**
-     * 服务地址
-     */
-    private String host;
 
     @Override
     public boolean equals(Object o) {

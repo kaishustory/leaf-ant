@@ -33,11 +33,77 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.SOURCE_C
 @Data
 public class Event {
 
+    /**
+     * 数据源类型
+     */
+    private String sourceType;
+    /**
+     * 数据库实例
+     */
+    private String server;
+    /**
+     * 数据库
+     */
+    private String database;
+    /**
+     * 表名
+     */
+    private String table;
+    /**
+     * 来源（init：初始化加载，canal：MySQL变更事件）
+     */
+    private String source = SOURCE_CANAL;
+    /**
+     * 同步目标（ElasticSearch：es，Redis：redis，MQ：mq）（仅source = init使用）
+     */
+    private String target;
+    /**
+     * 配置映射ID（仅source = init使用）
+     */
+    private String mappingId;
+    /**
+     * 操作类型（1：新增，2：修改，3：删除）
+     */
+    private int type;
+    /**
+     * 操作类型名称
+     */
+    private String typeName;
+    /**
+     * 主键值
+     */
+    private String primaryKey;
+    /**
+     * 修改前列信息
+     */
+    private List<EventColumn> beforeColumns;
+    /**
+     * 修改后列信息
+     */
+    private List<EventColumn> afterColumns;
+    /**
+     * 时间发生时间
+     */
+    private long executeTime;
+    /**
+     * 服务ID
+     */
+    private long serverId;
+    /**
+     * MySQL binlog文件名
+     */
+    private String logfileName;
+    /**
+     * MySQL binlog位置
+     */
+    private long logfileOffset;
+
     public Event() {
     }
 
     /**
      * 初始化事件使用
+     *
      * @param sourceType
      * @param source
      * @param target
@@ -70,6 +136,7 @@ public class Event {
 
     /**
      * Canal事件使用
+     *
      * @param sourceType
      * @param server
      * @param database
@@ -100,108 +167,28 @@ public class Event {
         this.logfileOffset = logfileOffset;
     }
 
-
-    /**
-     * 数据源类型
-     */
-    private String sourceType;
-
-    /**
-     * 数据库实例
-     */
-    private String server;
-
-    /**
-     * 数据库
-     */
-    private String database;
-
-    /**
-     * 表名
-     */
-    private String table;
-
-    /**
-     * 来源（init：初始化加载，canal：MySQL变更事件）
-     */
-    private String source = SOURCE_CANAL;
-
-    /**
-     * 同步目标（ElasticSearch：es，Redis：redis，MQ：mq）（仅source = init使用）
-     */
-    private String target;
-
-    /**
-     * 配置映射ID（仅source = init使用）
-     */
-    private String mappingId;
-
-    /**
-     * 操作类型（1：新增，2：修改，3：删除）
-     */
-    private int type;
-
-    /**
-     * 操作类型名称
-     */
-    private String typeName;
-
-    /**
-     * 主键值
-     */
-    private String primaryKey;
-
-    /**
-     * 修改前列信息
-     */
-    private List<EventColumn> beforeColumns;
-
-    /**
-     * 修改后列信息
-     */
-    private List<EventColumn> afterColumns;
-
-    /**
-     * 时间发生时间
-     */
-    private long executeTime;
-
-    /**
-     * 服务ID
-     */
-    private long serverId;
-
-    /**
-     * MySQL binlog文件名
-     */
-    private String logfileName;
-
-    /**
-     * MySQL binlog位置
-     */
-    private long logfileOffset;
-
-    public int getHashCode(){
+    public int getHashCode() {
         return Objects.hashCode(this);
     }
 
     /**
      * 获得完整表名
+     *
      * @return
      */
-    public String getTableKey(){
+    public String getTableKey() {
         return String.format("%s:%s:%s", this.getServer(), this.getDatabase(), this.getTable());
     }
 
     /**
      * 读取更新字段
      */
-    public List<EventColumn> getUpdateColumns(){
-        if(type == TYPE_INSERT || type == TYPE_UPDATE){
+    public List<EventColumn> getUpdateColumns() {
+        if (type == TYPE_INSERT || type == TYPE_UPDATE) {
             return this.getAfterColumns().stream().filter(EventColumn::isUpdated).collect(Collectors.toList());
-        }else if(type == TYPE_DELETE){
+        } else if (type == TYPE_DELETE) {
             return this.getBeforeColumns().stream().filter(EventColumn::isKey).collect(Collectors.toList());
-        }else {
+        } else {
             return new ArrayList<>(0);
         }
     }
@@ -209,12 +196,12 @@ public class Event {
     /**
      * 提取全部字段
      */
-    public List<EventColumn> getAllColumns(){
-        if(type == TYPE_INSERT || type == TYPE_UPDATE){
+    public List<EventColumn> getAllColumns() {
+        if (type == TYPE_INSERT || type == TYPE_UPDATE) {
             return this.getAfterColumns();
-        }else if(type == TYPE_DELETE){
+        } else if (type == TYPE_DELETE) {
             return this.getBeforeColumns();
-        }else {
+        } else {
             return new ArrayList<>(0);
         }
     }
@@ -222,7 +209,7 @@ public class Event {
     /**
      * 更新字段基本信息 <字段名称, 字段内容>
      */
-    public Map<String,String> getUpdateColumnsBase(){
-        return getUpdateColumns().stream().collect(Collectors.toMap(EventColumn::getName, e -> StringUtils.isNotNull(e.getValue())? e.getValue() :""));
+    public Map<String, String> getUpdateColumnsBase() {
+        return getUpdateColumns().stream().collect(Collectors.toMap(EventColumn::getName, e -> StringUtils.isNotNull(e.getValue()) ? e.getValue() : ""));
     }
 }

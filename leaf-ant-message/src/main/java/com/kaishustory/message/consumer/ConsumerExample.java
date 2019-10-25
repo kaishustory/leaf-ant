@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ConsumerExample {
 
     public static void main(String[] args) {
-        NettyConsumer nettyConsumer = new NettyConsumer("common","test", "172.16.8.100:2182", request -> {
+        NettyConsumer nettyConsumer = new NettyConsumer("common", "test", "172.16.8.100:2182", request -> {
             // 回复消息
             log.info("接收到消息");
             return new RpcResponse("reply", "干啥呢", RpcResponse.STATUS_SUCCESS);

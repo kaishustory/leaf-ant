@@ -17,81 +17,59 @@ import java.util.Optional;
 
 /**
  * Service层返回类型
+ *
  * @author liguoyang
  * @create 2018-08-01 下午4:43
  **/
 public class Option<T> implements Serializable {
+
+    /**
+     * 值
+     */
+    private T value;
+    /**
+     * 错误码
+     */
+    private int errcode = 0;
+    /**
+     * 错误信息
+     */
+    private String errmsg;
 
     public Option(T value) {
         this.value = value;
     }
 
     /**
-     * 值
-     */
-    private T value;
-
-    /**
-     * 错误码
-     */
-    private int errcode = 0;
-
-    /**
-     * 错误信息
-     */
-    private String errmsg;
-
-    /**
-     * 是否有内容
-     * @return
-     */
-    public boolean exist(){
-        return value!=null;
-    }
-
-    /**
-     * 是否无内容
-     * @return
-     */
-    public boolean nil(){
-        return !exist();
-    }
-
-    /**
-     * 是否错误
-     * @return
-     */
-    public boolean error(){
-        return errcode!=0||errmsg!=null;
-    }
-
-    /**
      * 返回空
+     *
      * @param <T>
      * @return
      */
-    public static <T> Option<T> empty(){
+    public static <T> Option<T> empty() {
         return new Option(null);
     }
 
     /**
      * 返回错误
+     *
      * @param errmsg 错误信息
      * @param <T>
      * @return
      */
-    public static <T> Option<T> error(String errmsg){
+    public static <T> Option<T> error(String errmsg) {
         return error(-1, errmsg);
     }
 
     /**
      * 返回错误
+     *
      * @param errcode 错误码
-     * @param errmsg 错误信息
+     * @param errmsg  错误信息
      * @param <T>
      * @return
      */
-    public static <T> Option<T> error(int errcode, String errmsg){
+    public static <T> Option<T> error(int errcode, String errmsg) {
         Option o = new Option(null);
         o.setErrcode(errcode);
         o.setErrmsg(errmsg);
@@ -100,45 +78,76 @@ public class Option<T> implements Serializable {
 
     /**
      * 返回带值对象
+     *
      * @param value 值
      * @param <T>
      * @return
      */
-    public static <T> Option<T> of(T value){
+    public static <T> Option<T> of(T value) {
         return new Option(value);
     }
 
     /**
      * 返回带值对象
+     *
      * @param optional 值
      * @param <T>
      * @return
      */
-    public static <T> Option<T> of(Optional<T> optional){
-        if(optional.isPresent()) {
+    public static <T> Option<T> of(Optional<T> optional) {
+        if (optional.isPresent()) {
             return new Option(optional.get());
-        }else {
+        } else {
             return Option.empty();
         }
     }
 
     /**
-     * 获得值
+     * 是否有内容
+     *
      * @return
      */
-    public T get(){
+    public boolean exist() {
+        return value != null;
+    }
+
+    /**
+     * 是否无内容
+     *
+     * @return
+     */
+    public boolean nil() {
+        return !exist();
+    }
+
+    /**
+     * 是否错误
+     *
+     * @return
+     */
+    public boolean error() {
+        return errcode != 0 || errmsg != null;
+    }
+
+    /**
+     * 获得值
+     *
+     * @return
+     */
+    public T get() {
         return value;
     }
 
     /**
      * 返回值 或 返回默认值
+     *
      * @param def 默认值
      * @return 返回值
      */
-    public T getOr(T def){
-        if(exist()){
+    public T getOr(T def) {
+        if (exist()) {
             return value;
-        }else{
+        } else {
             return def;
         }
     }
@@ -147,20 +156,20 @@ public class Option<T> implements Serializable {
         return value;
     }
 
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
     public void setValue(T value) {
         this.value = value;
     }
 
+    public int getErrcode() {
+        return errcode;
+    }
+
     public void setErrcode(int errcode) {
         this.errcode = errcode;
+    }
+
+    public String getErrmsg() {
+        return errmsg;
     }
 
     public void setErrmsg(String errmsg) {

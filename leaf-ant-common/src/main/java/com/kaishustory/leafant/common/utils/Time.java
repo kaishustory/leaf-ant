@@ -18,45 +18,47 @@ import java.text.DecimalFormat;
 
 /**
  * 计时器
+ *
  * @author liguoyang
  */
 public class Time {
 
 
-	/**
-	 * 任务名称
-	 */
-	private String name;
+    /**
+     * 任务名称
+     */
+    private String name;
 
-	/**
-	 * 开始时间
-	 */
-	private long beginTime;
+    /**
+     * 开始时间
+     */
+    private long beginTime;
 
-	/**
-	 * 结束时间
-	 */
-	private long endTime;
+    /**
+     * 结束时间
+     */
+    private long endTime;
 
-	/**
-	 * 开始记时
-	 * @param name 名称
-	 * @param name 人物名称
-	 */
-	public Time(String name) {
-		this.name = name;
-		this.beginTime = System.currentTimeMillis();
-		Log.info(name+" 开始处理");
-	}
+    /**
+     * 开始记时
+     *
+     * @param name 名称
+     * @param name 人物名称
+     */
+    public Time(String name) {
+        this.name = name;
+        this.beginTime = System.currentTimeMillis();
+        Log.info(name + " 开始处理");
+    }
 
-	/**
-	 * 结束记时
-	 */
-	public void end() {
-		this.endTime = System.currentTimeMillis();
-		float time = (endTime - beginTime);
-		Log.info(name+" 处理完成");
-		Log.info(name+" 耗时："+ new DecimalFormat("#.##").format(time)+"/ms");
-	}
+    /**
+     * 结束记时
+     */
+    public void end() {
+        this.endTime = System.currentTimeMillis();
+        float time = (endTime - beginTime);
+        Log.info(name + " 处理完成");
+        Log.info(name + " 耗时：" + new DecimalFormat("#.##").format(time) + "/ms");
+    }
 
 }

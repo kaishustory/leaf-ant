@@ -40,11 +40,11 @@ public class ZooClient {
     public static synchronized CuratorFramework getClient(String addr) {
         if (client == null) {
             client = CuratorFrameworkFactory.builder()
-                            .connectString(addr)
-                            .sessionTimeoutMs(5000)
-                            .connectionTimeoutMs(5000)
-                            .retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000))
-                            .build();
+                    .connectString(addr)
+                    .sessionTimeoutMs(5000)
+                    .connectionTimeoutMs(5000)
+                    .retryPolicy(new RetryNTimes(Integer.MAX_VALUE, 1000))
+                    .build();
             client.getConnectionStateListenable().addListener((curatorFramework, connectionState) -> {
                 log.info("Zookeeper状态变更：state：{}，isConnected：{}", connectionState.name(), connectionState.isConnected());
                 // Zookeeper重连

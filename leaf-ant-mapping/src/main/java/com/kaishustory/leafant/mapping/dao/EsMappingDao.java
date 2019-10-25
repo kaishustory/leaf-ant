@@ -12,7 +12,10 @@
 
 package com.kaishustory.leafant.mapping.dao;
 
-import com.kaishustory.leafant.common.model.*;
+import com.kaishustory.leafant.common.model.EsSyncConfig;
+import com.kaishustory.leafant.common.model.EsSyncMappingTable;
+import com.kaishustory.leafant.common.model.LoadStatus;
+import com.kaishustory.leafant.common.model.SyncStatus;
 import com.kaishustory.leafant.common.utils.Log;
 import com.kaishustory.leafant.common.utils.Option;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,18 +58,20 @@ public class EsMappingDao {
 
     /**
      * 按ID查询
+     *
      * @param id ID
      * @return
      */
-    public EsSyncConfig findById(String id){
+    public EsSyncConfig findById(String id) {
         return setTableConfigInfo(mongoTemplate.findById(id, EsSyncConfig.class, collection));
     }
 
     /**
      * 查询全部ES映射结构
+     *
      * @return
      */
-    public List<EsSyncConfig> findAllMapping(){
+    public List<EsSyncConfig> findAllMapping() {
         List<EsSyncConfig> esSyncConfigList = mongoTemplate.find(Query.query(Criteria.where("env").is(env)), EsSyncConfig.class, collection);
         // 表写入配置信息
         setTableConfigInfo(esSyncConfigList);
@@ -75,10 +80,11 @@ public class EsMappingDao {
 
     /**
      * 查询有效ES映射结构
+     *
      * @param filterSync 是否过滤未启用配置
      * @return
      */
-    public List<EsSyncMappingTable> findSyncMapping(boolean filterSync){
+    public List<EsSyncMappingTable> findSyncMapping(boolean filterSync) {
         List<EsSyncConfig> esSyncConfigModels = mongoTemplate.find(Query.query(Criteria.where("env").is(env)), EsSyncConfig.class, collection);
         // 表写入配置信息
         setTableConfigInfo(esSyncConfigModels);
@@ -92,9 +98,10 @@ public class EsMappingDao {
 
     /**
      * 保存ES映射结构
+     *
      * @param esSyncConfig ES映射配置
      */
-    public Option<String> saveConfig(EsSyncConfig esSyncConfig){
+    public Option<String> saveConfig(EsSyncConfig esSyncConfig) {
         try {
             // 环境
             esSyncConfig.setEnv(env);
@@ -106,7 +113,7 @@ public class EsMappingDao {
             mongoTemplate.save(esSyncConfig, collection);
             Log.info("MongoDB 保存ES映射结构成功！{}", esSyncConfig);
             return Option.of(esSyncConfig.getId());
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("MongoDB 保存ES映射结构异常！{}", esSyncConfig, e);
             return Option.error(e.getMessage());
         }
@@ -114,37 +121,40 @@ public class EsMappingDao {
     }
 
 
-
     /**
      * 更改已初始化状态
+     *
      * @param loadStatus 状态
      */
-    public void updateInitialized(LoadStatus loadStatus){
+    public void updateInitialized(LoadStatus loadStatus) {
         mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is(loadStatus.getMappingId())), Update.update("init", loadStatus.getLoadStatus()), collection);
     }
 
     /**
      * 更改同步状态
+     *
      * @param syncStatus 状态
      */
-    public void updateSync(SyncStatus syncStatus){
+    public void updateSync(SyncStatus syncStatus) {
         mongoTemplate.updateFirst(Query.query(Criteria.where("_id").is(syncStatus.getMappingId())), Update.update("sync", syncStatus.isSync()), collection);
     }
 
     /**
      * 表配置写入映射信息
+     *
      * @param list 配置列表
      */
-    private List<EsSyncConfig> setTableConfigInfo(List<EsSyncConfig> list){
+    private List<EsSyncConfig> setTableConfigInfo(List<EsSyncConfig> list) {
         list.forEach(this::setTableConfigInfo);
         return list;
     }
 
     /**
      * 表配置写入映射信息
+     *
      * @param config 配置
      */
-    private EsSyncConfig setTableConfigInfo(EsSyncConfig config){
+    private EsSyncConfig setTableConfigInfo(EsSyncConfig config) {
         config.getTableList().forEach(table -> {
             // 写入配置信息
             table.setConfigInfo(config);

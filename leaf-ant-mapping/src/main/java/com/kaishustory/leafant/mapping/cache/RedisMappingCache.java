@@ -65,28 +65,33 @@ public class RedisMappingCache {
      * 初始化
      */
     @PostConstruct
-    public void init(){
+    public void init() {
         // 加载映射配置
         loadMapping(true);
     }
 
     /**
      * 加载Redis映射配置
+     *
      * @param init 系统启动加载
      */
-    public void loadMapping(boolean init){
+    public void loadMapping(boolean init) {
         Time time = new Time("Mongo加载Redis映射配置");
         try {
-            if(init) { readWriteLock.writeLock().lock(); }
+            if (init) {
+                readWriteLock.writeLock().lock();
+            }
             // 查询全部映射数据
             Map<String, List<RedisSyncConfig>> allMapping = mappingDao.findSyncMapping(filterSync).stream().collect(Collectors.groupingBy(m -> getCacheKey(m.getSourceRds(), m.getSourceDatabase(), m.getSourceTable())));
-            if(!init) { readWriteLock.writeLock().lock(); }
+            if (!init) {
+                readWriteLock.writeLock().lock();
+            }
             redisMappingCache.invalidateAll();
             redisMappingCache.putAll(allMapping);
 
-        }catch (Throwable t){
+        } catch (Throwable t) {
             Log.info("Redis配置加载发生异常！", t);
-        }finally {
+        } finally {
             readWriteLock.writeLock().unlock();
         }
         time.end();
@@ -94,33 +99,35 @@ public class RedisMappingCache {
 
     /**
      * 读取Redis映射结构列表
-     * @param rds 实例
+     *
+     * @param rds      实例
      * @param database 数据库
-     * @param table 表
+     * @param table    表
      * @return ES映射结构列表
      */
-    public Option<List<RedisSyncConfig>> getMapping(String rds, String database, String table){
+    public Option<List<RedisSyncConfig>> getMapping(String rds, String database, String table) {
         try {
             readWriteLock.readLock().lock();
             List<RedisSyncConfig> mapping = redisMappingCache.getIfPresent(getCacheKey(rds, database, table));
-            if (mapping != null && mapping.size()>0) {
+            if (mapping != null && mapping.size() > 0) {
                 return Option.of(mapping);
             } else {
                 return Option.empty();
             }
-        }finally {
+        } finally {
             readWriteLock.readLock().unlock();
         }
     }
 
     /**
      * 获得缓存KEY
-     * @param rds 实例
+     *
+     * @param rds      实例
      * @param database 数据库
-     * @param table 表
+     * @param table    表
      * @return 缓存KEY
      */
-    private String getCacheKey(String rds, String database, String table){
+    private String getCacheKey(String rds, String database, String table) {
         return String.format("%s:%s:%s", rds, database, table);
     }
 }

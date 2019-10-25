@@ -13,8 +13,10 @@
 package com.kaishustory.leafant.common.model;
 
 import lombok.Data;
+
 import java.util.Date;
 import java.util.Map;
+
 import static com.kaishustory.leafant.common.constants.EventConstants.LOAD_STATUS_NO;
 
 /**
@@ -90,7 +92,6 @@ public class MySQLSyncConfig {
      * 更新时间
      */
     private Date updateTime;
-
 
 
 }

@@ -38,22 +38,23 @@ public class AllMappingCache {
 
     /**
      * 是否存在配置
-     * @param rds 实例
+     *
+     * @param rds      实例
      * @param database 数据库
-     * @param table 表
+     * @param table    表
      * @return 是否存在配置
      */
-    public boolean has(String rds, String database, String table){
-        if(mqMappingCache.getMapping(rds, database, table).exist()){
+    public boolean has(String rds, String database, String table) {
+        if (mqMappingCache.getMapping(rds, database, table).exist()) {
             return true;
         }
-        if(esMappingCache.getMapping(rds, database, table).exist()){
+        if (esMappingCache.getMapping(rds, database, table).exist()) {
             return true;
         }
-        if(redisMappingCache.getMapping(rds, database, table).exist()){
+        if (redisMappingCache.getMapping(rds, database, table).exist()) {
             return true;
         }
-        if(mySQLMappingCache.getMapping(rds, database, table).exist()){
+        if (mySQLMappingCache.getMapping(rds, database, table).exist()) {
             return true;
         }
         return false;

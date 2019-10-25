@@ -41,10 +41,10 @@ public class ProducerHandler extends SimpleChannelInboundHandler<RpcResponse> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
         try {
-            log.info("server callback：{}" , response.toString());
+            log.info("server callback：{}", response.toString());
             // 回复事件
             callbackServer.reply(response.getId(), response);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("server callback error ", e);
         }
     }

@@ -25,6 +25,19 @@ import java.util.UUID;
 @Data
 public class RpcRequest {
 
+    /**
+     * 消息ID
+     */
+    private String msgId;
+    /**
+     * 消息类型（动作类型）
+     */
+    private String action;
+    /**
+     * 消息内容
+     */
+    private String data;
+
     public RpcRequest() {
     }
 
@@ -33,20 +46,5 @@ public class RpcRequest {
         this.action = action;
         this.data = data;
     }
-
-    /**
-     * 消息ID
-     */
-    private String msgId;
-
-    /**
-     * 消息类型（动作类型）
-     */
-    private String action;
-
-    /**
-     * 消息内容
-     */
-    private String data;
 
 }

@@ -29,7 +29,7 @@ import java.net.ConnectException;
 public class ProducerExample {
 
     public static void main(String[] args) throws InterruptedException, ConnectException {
-        NettyTopicProducer topicProducer = new NettyTopicProducer("common","test", "172.16.8.100:2182");
+        NettyTopicProducer topicProducer = new NettyTopicProducer("common", "test", "172.16.8.100:2182");
         while (true) {
             // 单播消息
             topicProducer.sendMsg(new RpcRequest("say", "你好"));

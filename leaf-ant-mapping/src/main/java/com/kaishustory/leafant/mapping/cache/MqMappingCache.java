@@ -14,11 +14,11 @@ package com.kaishustory.leafant.mapping.cache;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.kaishustory.leafant.common.model.MqSyncConfig;
 import com.kaishustory.leafant.common.utils.Log;
 import com.kaishustory.leafant.common.utils.Option;
 import com.kaishustory.leafant.common.utils.Time;
 import com.kaishustory.leafant.mapping.dao.MqMappingDao;
-import com.kaishustory.leafant.common.model.MqSyncConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -65,7 +65,7 @@ public class MqMappingCache {
      * 初始化
      */
     @PostConstruct
-    public void init(){
+    public void init() {
         // 加载映射配置
         loadMapping(true);
     }
@@ -73,19 +73,23 @@ public class MqMappingCache {
     /**
      * 加载MQ映射配置
      */
-    public void loadMapping(boolean init){
+    public void loadMapping(boolean init) {
         Time time = new Time("Mongo加载MQ映射配置");
         try {
-            if(init) { readWriteLock.writeLock().lock(); }
+            if (init) {
+                readWriteLock.writeLock().lock();
+            }
             // 查询全部映射数据
             Map<String, List<MqSyncConfig>> allMapping = mappingDao.findAllMapping().stream().collect(Collectors.groupingBy(m -> getCacheKey(m.getSourceRds(), m.getSourceDatabase(), m.getSourceTable())));
-            if(!init) { readWriteLock.writeLock().lock(); }
+            if (!init) {
+                readWriteLock.writeLock().lock();
+            }
             mqMappingCache.cleanUp();
             mqMappingCache.putAll(allMapping);
 
-        }catch (Throwable t){
+        } catch (Throwable t) {
             Log.info("MQ配置加载发生异常！", t);
-        }finally {
+        } finally {
             readWriteLock.writeLock().unlock();
         }
         time.end();
@@ -93,12 +97,13 @@ public class MqMappingCache {
 
     /**
      * 读取MQ映射结构列表
-     * @param rds 实例
+     *
+     * @param rds      实例
      * @param database 数据库
-     * @param table 表
+     * @param table    表
      * @return ES映射结构列表
      */
-    public Option<List<MqSyncConfig>> getMapping(String rds, String database, String table){
+    public Option<List<MqSyncConfig>> getMapping(String rds, String database, String table) {
         try {
             readWriteLock.readLock().lock();
             List<MqSyncConfig> mapping = mqMappingCache.getIfPresent(getCacheKey(rds, database, table));
@@ -107,19 +112,20 @@ public class MqMappingCache {
             } else {
                 return Option.empty();
             }
-        }finally {
+        } finally {
             readWriteLock.readLock().unlock();
         }
     }
 
     /**
      * 获得缓存KEY
-     * @param rds 实例
+     *
+     * @param rds      实例
      * @param database 数据库
-     * @param table 表
+     * @param table    表
      * @return 缓存KEY
      */
-    private String getCacheKey(String rds, String database, String table){
+    private String getCacheKey(String rds, String database, String table) {
         return String.format("%s:%s:%s", rds, database, table);
     }
 }

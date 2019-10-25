@@ -25,24 +25,27 @@ public class Log {
 
     /**
      * 获得类名称
+     *
      * @param level 调用栈级别
      * @return 类名称
      */
-    private static String getClassName(Integer level){
+    private static String getClassName(Integer level) {
         StackTraceElement stackTraceElement = new Throwable().getStackTrace()[level];
         return stackTraceElement.toString();
     }
 
     /**
      * 获得日志对象
+     *
      * @return 日志对象
      */
-    private static Logger getLog(){
+    private static Logger getLog() {
         return LoggerFactory.getLogger(getClassName(3));
     }
 
     /**
      * DEBUG日志
+     *
      * @param msg 日志信息
      */
     public static void debug(String msg) {
@@ -51,15 +54,17 @@ public class Log {
 
     /**
      * DEBUG日志
+     *
      * @param msg 日志信息
      * @param var 参数信息
      */
-    public static void debug(String msg,Object ... var) {
+    public static void debug(String msg, Object... var) {
         getLog().debug(msg, var);
     }
 
     /**
      * INFO日志
+     *
      * @param msg 日志信息
      */
     public static void info(String msg) {
@@ -68,15 +73,17 @@ public class Log {
 
     /**
      * WARN日志
+     *
      * @param msg 日志信息
      * @param var 参数信息
      */
-    public static void warn(String msg,Object ... var) {
+    public static void warn(String msg, Object... var) {
         getLog().warn(msg, var);
     }
 
     /**
      * WARN日志
+     *
      * @param msg 日志信息
      */
     public static void warn(String msg) {
@@ -85,66 +92,73 @@ public class Log {
 
     /**
      * INFO日志
+     *
      * @param msg 日志信息
      * @param var 参数信息
      */
-    public static void info(String msg,Object ... var) {
+    public static void info(String msg, Object... var) {
         getLog().info(msg, var);
     }
 
     /**
      * ERROR日志
+     *
      * @param msg 日志信息
-     * @param e 异常信息
+     * @param e   异常信息
      */
-    public static void error(String msg, Throwable e){
+    public static void error(String msg, Throwable e) {
         getLog().error(msg, e);
     }
 
     /**
      * ERROR日志
+     *
      * @param msg 日志信息
      */
-    public static void error(String msg){
+    public static void error(String msg) {
         getLog().error(msg);
     }
 
     /**
      * ERROR日志
+     *
      * @param msg 日志信息
      * @param var 参数信息
      */
-    public static void error(String msg, Object ... var){
-        getLog().error(msg,var);
+    public static void error(String msg, Object... var) {
+        getLog().error(msg, var);
     }
 
     /**
      * ERROR日志（并抛出异常）
+     *
      * @param msg 日志信息
-     * @param e 异常信息
+     * @param e   异常信息
      */
-    public static void errorThrow(String msg, Throwable e) throws RuntimeException{
+    public static void errorThrow(String msg, Throwable e) throws RuntimeException {
         getLog().error(msg, e);
         throw new RuntimeException(msg, e);
     }
 
     /**
      * ERROR日志（并抛出异常）
+     *
      * @param msg 日志信息
      */
-    public static void errorThrow(String msg) throws RuntimeException{
+    public static void errorThrow(String msg) throws RuntimeException {
         getLog().error(msg);
         throw new RuntimeException(msg);
     }
 
     /**
      * ERROR日志（并抛出异常）
+     *
      * @param msg 日志信息
      * @param var 参数信息
      */
-    public static void errorThrow(String msg, Object ... var) throws RuntimeException{
-        getLog().error(msg,var);
-        for(Object v : var){
+    public static void errorThrow(String msg, Object... var) throws RuntimeException {
+        getLog().error(msg, var);
+        for (Object v : var) {
             msg = msg.replaceFirst("\\{}", v.toString());
         }
         throw new RuntimeException(msg);

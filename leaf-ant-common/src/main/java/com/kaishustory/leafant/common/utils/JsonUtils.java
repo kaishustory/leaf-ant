@@ -13,18 +13,16 @@
 package com.kaishustory.leafant.common.utils;
 
 
-
-import com.google.gson.Gson;
-import com.google.gson.JsonParser;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Json转换工具
@@ -44,15 +42,15 @@ public class JsonUtils {
      */
     private static JsonParser jsonParser;
 
-    private static Gson getGson(){
-        if(gson==null){
+    private static Gson getGson() {
+        if (gson == null) {
             gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").disableHtmlEscaping().create();
         }
         return gson;
     }
 
-    private static JsonParser getParser(){
-        if(jsonParser==null){
+    private static JsonParser getParser() {
+        if (jsonParser == null) {
             jsonParser = new JsonParser();
         }
         return jsonParser;
@@ -60,54 +58,60 @@ public class JsonUtils {
 
     /**
      * JSON 转 对象
+     *
      * @param json JSON
-     * @param cls 对象类型
+     * @param cls  对象类型
      * @return 对象
      */
-    public static <T> T fromJson(String json, Class<T> cls){
-        return getGson().fromJson(json,cls);
+    public static <T> T fromJson(String json, Class<T> cls) {
+        return getGson().fromJson(json, cls);
     }
 
     /**
      * 对象 转 JSON
+     *
      * @param obj 对象
      * @return JSON
      */
-    public static String toJson(Object obj){
+    public static String toJson(Object obj) {
         return getGson().toJson(obj);
     }
 
     /**
      * Json 转 Json对象
+     *
      * @param json JSON
      * @return Json对象
      */
-    public static JsonObject toJsonObject(String json){
+    public static JsonObject toJsonObject(String json) {
         return getParser().parse(json).getAsJsonObject();
     }
 
     /**
      * Json 转 JsonArray对象
+     *
      * @param json JSON
      * @return Json对象
      */
-    public static JsonArray toJsonList(String json){
+    public static JsonArray toJsonList(String json) {
         return getParser().parse(json).getAsJsonArray();
     }
 
     /**
      * Json 转 数组
+     *
      * @param json JSON
-     * @param cls 对象类型
+     * @param cls  对象类型
      * @return 列表
      */
-    public static <T> T toList(String json, Class<T> cls){
+    public static <T> T toList(String json, Class<T> cls) {
         return fromJson(json, cls);
     }
 
     /**
      * Map 转 对象
-     * @param map Map<String, Any>? Map内容
+     *
+     * @param map       Map<String, Any>? Map内容
      * @param beanClass Class<T> 类型定义
      */
     public static <T> T mapToObject(Map<String, Object> map, Class<T> beanClass) {
@@ -121,11 +125,11 @@ public class JsonUtils {
             PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
 
             Arrays.stream(propertyDescriptors).forEach(property -> {
-                if("class".equals(property.getName())){
+                if ("class".equals(property.getName())) {
                     return;
                 }
                 Method setter = property.getWriteMethod();
-                if(setter!=null) {
+                if (setter != null) {
                     Object value = map.get(property.getName());
                     // 日期类型转换
                     if (setter.getParameterTypes()[0].getTypeName().equals(Date.class.getName()) && value instanceof String) {
@@ -142,7 +146,7 @@ public class JsonUtils {
             });
 
             return (T) obj;
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("Map to Object 发生异常!", e);
             return null;
         }
@@ -150,10 +154,11 @@ public class JsonUtils {
 
     /**
      * 对象 转 Map
+     *
      * @param obj Any? 对象
-     * @return Map<String, Any?> Map
+     * @return Map<String   ,       Any   ?> Map
      */
-    public static Map objectToMap(Object obj){
+    public static Map objectToMap(Object obj) {
         try {
             if (obj == null) {
                 return new HashMap(0);
@@ -167,20 +172,20 @@ public class JsonUtils {
                 try {
                     String key = property.getName();
                     //默认PropertyDescriptor会有一个class对象，剔除之
-                    if("class".equals(property.getName())){
+                    if ("class".equals(property.getName())) {
                         return;
                     }
                     Method getter = property.getReadMethod();
-                    if(getter!=null) {
+                    if (getter != null) {
                         Object value = getter.invoke(obj);
                         map.put(key, value);
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     Log.error("Object to Map 设置属性时, 发生异常!", e);
                 }
             });
             return map;
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.error("Object to Map 发生异常!", e);
             return new HashMap(0);
         }

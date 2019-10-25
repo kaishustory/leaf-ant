@@ -73,8 +73,9 @@ public class NettyTopicProducer {
 
     /**
      * Netty 按主题发送消息
-     * @param group 分组
-     * @param topic 主题
+     *
+     * @param group    分组
+     * @param topic    主题
      * @param zoo_addr Zookeeper地址
      */
     public NettyTopicProducer(String group, String topic, String zoo_addr) {
@@ -90,22 +91,23 @@ public class NettyTopicProducer {
             while (!close) {
                 try {
                     try {
-                        Thread.sleep(1000*5);
+                        Thread.sleep(1000 * 5);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     // 更新消费者列表
                     updateConsumerList();
-                }catch (Throwable t) {
+                } catch (Throwable t) {
                     log.error("更新netty消费者列表失败！Group：{} Topic：{}", group, topic);
                 }
             }
-        },String.format("netty-producer-consumerlist-refresh-%s-%s", group, topic)).start();
+        }, String.format("netty-producer-consumerlist-refresh-%s-%s", group, topic)).start();
     }
 
     /**
      * Netty 按主题发送消息
-     * @param topic 主题
+     *
+     * @param topic    主题
      * @param zoo_addr Zookeeper地址
      */
     public NettyTopicProducer(String topic, String zoo_addr) {
@@ -114,21 +116,22 @@ public class NettyTopicProducer {
 
     /**
      * 发送单播消息
+     *
      * @param request 消息内容
      */
-    public Stats sendMsg(RpcRequest request){
+    public Stats sendMsg(RpcRequest request) {
         List<Stats.ConsumerStats> consumerStatsList = new ArrayList<>(consumerList.size());
         Stats stats = new Stats(request.getMsgId(), group, topic, consumerStatsList);
         try {
             consumerListLock.readLock().lock();
             NettyProducer client = getOneClient(request);
-            if(client != null) {
+            if (client != null) {
                 boolean success = client.send(request);
                 consumerStatsList.add(new Stats.ConsumerStats(client.getAddr(), success));
-            }else {
+            } else {
                 log.info("no consumer msg is ignore. group：{} topic：{}，request：{}", group, topic, request);
             }
-        }finally {
+        } finally {
             consumerListLock.readLock().unlock();
         }
         return stats;
@@ -136,21 +139,23 @@ public class NettyTopicProducer {
 
     /**
      * 同步消息（默认：超时时间30秒）
+     *
      * @param request 请求信息
      * @return 响应信息
      */
-    public RpcResponse sendSyncMsg(RpcRequest request){
+    public RpcResponse sendSyncMsg(RpcRequest request) {
         return sendSyncMsg(request, 30, TimeUnit.SECONDS);
     }
 
     /**
      * 同步消息
-     * @param request 请求信息
-     * @param timeout 超时
+     *
+     * @param request  请求信息
+     * @param timeout  超时
      * @param timeUnit 超时单位
      * @return 响应信息
      */
-    public RpcResponse sendSyncMsg(RpcRequest request, long timeout, TimeUnit timeUnit){
+    public RpcResponse sendSyncMsg(RpcRequest request, long timeout, TimeUnit timeUnit) {
         CountDownLatch count = new CountDownLatch(1);
         AtomicReference<RpcResponse> referenceRef = new AtomicReference<>();
         // 发送消息
@@ -158,7 +163,7 @@ public class NettyTopicProducer {
             referenceRef.set(response);
             count.countDown();
         });
-        if(stats.success()) {
+        if (stats.success()) {
             try {
                 // 等待返回
                 count.await(timeout, timeUnit);
@@ -166,29 +171,30 @@ public class NettyTopicProducer {
                 return RpcResponse.errorResponse("message callback timeout!");
             }
             return referenceRef.get();
-        }else {
+        } else {
             return RpcResponse.errorResponse("message send fail!");
         }
     }
 
     /**
      * 发送单播消息
-     * @param request 消息内容
+     *
+     * @param request  消息内容
      * @param callback 回复处理
      */
-    public Stats sendMsg(RpcRequest request, MessageCallback callback){
+    public Stats sendMsg(RpcRequest request, MessageCallback callback) {
         List<Stats.ConsumerStats> consumerStatsList = new ArrayList<>(consumerList.size());
         Stats stats = new Stats(request.getMsgId(), group, topic, consumerStatsList);
         try {
             consumerListLock.readLock().lock();
             NettyProducer client = getOneClient(request);
-            if(client != null) {
-                    boolean success = client.sendCallback(request, callback);
-                    consumerStatsList.add(new Stats.ConsumerStats(client.getAddr(), success));
-            }else {
+            if (client != null) {
+                boolean success = client.sendCallback(request, callback);
+                consumerStatsList.add(new Stats.ConsumerStats(client.getAddr(), success));
+            } else {
                 log.info("no consumer msg is ignore. group：{} topic：{}，request：{}", group, topic, request);
             }
-        }finally {
+        } finally {
             consumerListLock.readLock().unlock();
         }
         return stats;
@@ -196,24 +202,25 @@ public class NettyTopicProducer {
 
     /**
      * 发送广播消息
+     *
      * @param request 消息内容
      * @return 返回结果
      */
-    public Stats sendBroadcastMsg(RpcRequest request){
+    public Stats sendBroadcastMsg(RpcRequest request) {
         List<Stats.ConsumerStats> consumerStatsList = new ArrayList<>(consumerList.size());
         Stats stats = new Stats(request.getMsgId(), group, topic, consumerStatsList);
         try {
             consumerListLock.readLock().lock();
             List<NettyProducer> openClientList = getOpenClientList();
-            if(openClientList.size()>0) {
+            if (openClientList.size() > 0) {
                 for (NettyProducer client : openClientList) {
                     boolean success = client.send(request);
                     consumerStatsList.add(new Stats.ConsumerStats(client.getAddr(), success));
                 }
-            }else {
+            } else {
                 log.info("no consumer msg is ignore. group：{} topic：{}，request：{}", group, topic, request);
             }
-        }finally {
+        } finally {
             consumerListLock.readLock().unlock();
         }
         return stats;
@@ -221,21 +228,23 @@ public class NettyTopicProducer {
 
     /**
      * 发送同步广播消息（默认：超时时间30秒）
+     *
      * @param request 消息内容
      * @return 返回结果
      */
-    public RpcResponseCollection sendSyncBroadcastMsg(RpcRequest request){
+    public RpcResponseCollection sendSyncBroadcastMsg(RpcRequest request) {
         return sendSyncBroadcastMsg(request, 30, TimeUnit.SECONDS);
     }
 
     /**
      * 发送同步广播消息
-     * @param request 消息内容
-     * @param timeout 超时
+     *
+     * @param request  消息内容
+     * @param timeout  超时
      * @param timeUnit 超时单位
      * @return 返回结果
      */
-    public RpcResponseCollection sendSyncBroadcastMsg(RpcRequest request, long timeout, TimeUnit timeUnit){
+    public RpcResponseCollection sendSyncBroadcastMsg(RpcRequest request, long timeout, TimeUnit timeUnit) {
         long start = System.currentTimeMillis();
         AtomicInteger count = new AtomicInteger();
         List<RpcResponse> responses = new ArrayList<>();
@@ -247,33 +256,35 @@ public class NettyTopicProducer {
         }));
 
         int consumerSize = stats.getConsumerStats().size();
-        while (count.intValue() < consumerSize){
+        while (count.intValue() < consumerSize) {
             // 超时检查
-            if(System.currentTimeMillis() - start > getMillis(timeout, timeUnit)){
+            if (System.currentTimeMillis() - start > getMillis(timeout, timeUnit)) {
                 return new RpcResponseCollection(consumerSize, responses, "message callback timeout!");
             }
             try {
                 Thread.sleep(1);
-            } catch (InterruptedException e) { }
+            } catch (InterruptedException e) {
+            }
         }
         // 返回结果
-        return new RpcResponseCollection(consumerSize,responses);
+        return new RpcResponseCollection(consumerSize, responses);
     }
 
     /**
      * 单位转换为毫秒
-     * @param timeout 超时
+     *
+     * @param timeout  超时
      * @param timeUnit 超时单位
      * @return 超时毫秒数
      */
-    private long getMillis(long timeout, TimeUnit timeUnit){
-        switch (timeUnit){
+    private long getMillis(long timeout, TimeUnit timeUnit) {
+        switch (timeUnit) {
             case DAYS:
-                return 1000*60*60*24 * timeout;
+                return 1000 * 60 * 60 * 24 * timeout;
             case HOURS:
-                return 1000*60*60 * timeout;
+                return 1000 * 60 * 60 * timeout;
             case MINUTES:
-                return 1000*60 * timeout;
+                return 1000 * 60 * timeout;
             case SECONDS:
                 return 1000 * timeout;
             case MILLISECONDS:
@@ -285,37 +296,39 @@ public class NettyTopicProducer {
 
     /**
      * 发送广播消息
-     * @param request 消息内容
+     *
+     * @param request  消息内容
      * @param callback 回复处理
      */
-    public Stats sendBroadcastMsg(RpcRequest request, MessageCallback callback){
+    public Stats sendBroadcastMsg(RpcRequest request, MessageCallback callback) {
         List<Stats.ConsumerStats> consumerStatsList = new ArrayList<>(consumerList.size());
         Stats stats = new Stats(request.getMsgId(), group, topic, consumerStatsList);
         try {
             consumerListLock.readLock().lock();
             List<NettyProducer> openClientList = getOpenClientList();
-            if(openClientList.size()>0) {
+            if (openClientList.size() > 0) {
                 for (NettyProducer client : openClientList) {
                     boolean success = client.sendCallback(request, callback);
                     consumerStatsList.add(new Stats.ConsumerStats(client.getAddr(), success));
                 }
-            }else {
+            } else {
                 log.info("no consumer msg is ignore. group：{}，topic：{}，request：{}", group, topic, request);
             }
-        }finally {
+        } finally {
             consumerListLock.readLock().unlock();
         }
         return stats;
     }
 
 
-
     /**
      * 更新消费者列表
      */
-    private synchronized void updateConsumerList(){
+    private synchronized void updateConsumerList() {
 
-        if(close){ return; }
+        if (close) {
+            return;
+        }
 
         ZooOpera zooOpera = new ZooOpera(zoo_addr);
         // 服务器有效的，消费者列表
@@ -329,12 +342,12 @@ public class NettyTopicProducer {
         // 已失效的，消费者列表
         List<String> invalidAddr = currAddr.stream().filter(addr -> !serverAddrList.contains(addr)).collect(Collectors.toList());
 
-        if(addAddr.size()>0){
-            List<NettyProducer> nettyProducerList = addAddr.stream().map(addr -> addr.split(":")).filter(addrs -> addrs.length>0 && addrs.length<=2).map(addrs -> {
+        if (addAddr.size() > 0) {
+            List<NettyProducer> nettyProducerList = addAddr.stream().map(addr -> addr.split(":")).filter(addrs -> addrs.length > 0 && addrs.length <= 2).map(addrs -> {
                 try {
 
                     return new NettyProducer(addrs[0], addrs.length == 1 ? 80 : Integer.parseInt(addrs[1]));
-                }catch (Exception e){
+                } catch (Exception e) {
                     log.error("创建连接时发生异常！addr: {}", addrs, e);
                 }
                 return null;
@@ -344,21 +357,21 @@ public class NettyTopicProducer {
             try {
                 consumerListLock.writeLock().lock();
                 consumerList.addAll(nettyProducerList);
-                log.info("新增消费者：Group：{}，Topic：{}, Consumer：{}", group, topic, nettyProducerList.stream().map(client -> client.getHost()+":"+client.getPort()).collect(Collectors.toList()));
-            }finally {
+                log.info("新增消费者：Group：{}，Topic：{}, Consumer：{}", group, topic, nettyProducerList.stream().map(client -> client.getHost() + ":" + client.getPort()).collect(Collectors.toList()));
+            } finally {
                 consumerListLock.writeLock().unlock();
             }
 
         }
 
-        if(invalidAddr.size()>0){
+        if (invalidAddr.size() > 0) {
             List<NettyProducer> destroyList = consumerList.stream().filter(client -> invalidAddr.contains(client.getAddr())).collect(Collectors.toList());
             destroyList.forEach(NettyProducer::destroy);
             try {
                 consumerListLock.writeLock().lock();
                 consumerList.removeAll(destroyList);
                 log.info("删除消费者：Group：{}，Topic：{}, Consumer：{}", group, topic, invalidAddr);
-            }finally {
+            } finally {
                 consumerListLock.writeLock().unlock();
             }
         }
@@ -366,15 +379,16 @@ public class NettyTopicProducer {
 
     /**
      * 获得一个服务器连接
+     *
      * @param request
      * @return
      */
-    private NettyProducer getOneClient(RpcRequest request){
+    private NettyProducer getOneClient(RpcRequest request) {
         List<NettyProducer> openClientList = getOpenClientList();
-        if(openClientList.size()>0) {
+        if (openClientList.size() > 0) {
             int i = Math.abs(Objects.hashCode(request.getMsgId())) % openClientList.size();
             return openClientList.get(i);
-        }else {
+        } else {
             return null;
         }
     }
@@ -382,14 +396,14 @@ public class NettyTopicProducer {
     /**
      * 获得有效连接列表
      */
-    private List<NettyProducer> getOpenClientList(){
+    private List<NettyProducer> getOpenClientList() {
         return consumerList.stream().filter(NettyProducer::isConnected).collect(Collectors.toList());
     }
 
     /**
      * 关闭所有连接
      */
-    public void close(){
+    public void close() {
         close = true;
         consumerList.forEach(NettyProducer::destroy);
         consumerList.clear();

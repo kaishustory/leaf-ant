@@ -103,20 +103,21 @@ public class EsSyncConfig {
     /**
      * 表列表
      */
-    public List<EsSyncMappingTable> getTableList(){
+    public List<EsSyncMappingTable> getTableList() {
         List<EsSyncMappingTable> tableList = new ArrayList<>();
         return getTableList(tableList, this.masterTable);
     }
 
     /**
      * 递归提取表列表
+     *
      * @param tableList 表列表
-     * @param table 当前表
+     * @param table     当前表
      * @return 表列表
      */
-    private List<EsSyncMappingTable> getTableList(List<EsSyncMappingTable> tableList, EsSyncMappingTable table){
+    private List<EsSyncMappingTable> getTableList(List<EsSyncMappingTable> tableList, EsSyncMappingTable table) {
         tableList.add(table);
-        if(table.getChildTable()!=null && table.getChildTable().size()>0){
+        if (table.getChildTable() != null && table.getChildTable().size() > 0) {
             table.getChildTable().forEach(child -> {
                 getTableList(tableList, child);
             });

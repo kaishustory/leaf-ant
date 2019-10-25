@@ -100,7 +100,7 @@ public class RedisSyncConfig {
     /**
      * 是否副本子表
      */
-    public boolean isCopyChild(){
+    public boolean isCopyChild() {
         return redisKeyPrefix.startsWith("child:");
     }
 
@@ -108,7 +108,20 @@ public class RedisSyncConfig {
      * Redis数据源配置
      */
     @Data
-    public static class RedisDataSourceConfig{
+    public static class RedisDataSourceConfig {
+
+        /**
+         * Redis地址（IP:端口）
+         */
+        private String redisAddr;
+        /**
+         * Redis密码
+         */
+        private String password;
+        /**
+         * DB
+         */
+        private int database = 0;
 
         public RedisDataSourceConfig() {
         }
@@ -118,20 +131,5 @@ public class RedisSyncConfig {
             this.password = password;
             this.database = database;
         }
-
-        /**
-         * Redis地址（IP:端口）
-         */
-        private String redisAddr;
-
-        /**
-         * Redis密码
-         */
-        private String password;
-
-        /**
-         * DB
-         */
-        private int database = 0;
     }
 }
