@@ -112,8 +112,8 @@ public class CanalListener implements Runnable {
                                 ));
                                 try {
                                     // 任务批量处理
-                                    boolean ack = canalMessageHandle.handle(message);
-                                    if (ack) {
+                                    boolean handleResult = canalMessageHandle.handle(message);
+                                    if (handleResult) {
                                         //确认处理成功
                                         conn.ack(batchId);
                                         log.info("任务处理成功！数据库实例：{}，BatchId：{}", server, batchId);

@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>leaf-ant</artifactId>
         <groupId>com.kaishustory</groupId>
+        <artifactId>leaf-ant</artifactId>
         <version>${revision}</version>
     </parent>
 
