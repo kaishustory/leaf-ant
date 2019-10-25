@@ -24,9 +24,6 @@ import java.util.List;
 
 /**
  * Redis结构转换服务
- *
- * @author liguoyang
- * @create 2019-08-20 16:35
  **/
 @Service
 public class RedisTransformService {

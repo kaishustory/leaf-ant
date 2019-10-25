@@ -23,9 +23,6 @@ import java.util.List;
 
 /**
  * 数据源接口
- *
- * @author liguoyang
- * @create 2019-08-13 15:57
  **/
 @RestController
 @RequestMapping("/datasource")

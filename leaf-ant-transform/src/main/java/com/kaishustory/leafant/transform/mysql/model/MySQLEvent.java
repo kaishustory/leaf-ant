@@ -26,9 +26,6 @@ import java.util.Optional;
 
 /**
  * MySQL事件
- *
- * @author liguoyang
- * @create 2019-09-09 16:01
  **/
 @Data
 public class MySQLEvent {

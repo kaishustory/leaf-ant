@@ -19,9 +19,6 @@ import java.util.List;
 
 /**
  * 发送状态
- *
- * @author liguoyang
- * @create 2019-07-30 16:56
  **/
 @Data
 public class Stats {

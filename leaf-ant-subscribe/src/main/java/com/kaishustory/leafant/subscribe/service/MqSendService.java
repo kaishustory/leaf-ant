@@ -30,9 +30,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.SOURCE_I
 
 /**
  * MQ消息发送
- *
- * @author liguoyang
- * @create 2019-07-17 19:32
  **/
 @Service
 public class MqSendService {

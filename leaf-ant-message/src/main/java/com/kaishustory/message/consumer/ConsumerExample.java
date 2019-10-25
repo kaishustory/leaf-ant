@@ -17,8 +17,7 @@ import com.kaishustory.message.common.model.RpcResponse;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @author liguoyang
- * @create 2019-07-29 11:33
+ *
  **/
 @Slf4j
 public class ConsumerExample {

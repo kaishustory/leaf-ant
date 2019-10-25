@@ -19,9 +19,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * 初始数据加载操作消息发送者
- *
- * @author liguoyang
- * @create 2019-07-30 20:18
  **/
 @Configuration
 public class LoadMessageProducer {

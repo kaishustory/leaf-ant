@@ -44,9 +44,6 @@ import java.util.stream.Collectors;
 
 /**
  * ElasticSearch工具
- *
- * @author liguoyang
- * @create 2019-07-26 10:45
  **/
 @Component
 public class ElasticSearchDao {

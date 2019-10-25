@@ -16,9 +16,6 @@ import lombok.Data;
 
 /**
  * 页面返回类
- *
- * @author liguoyang
- * @create 2019-09-25 17:00
  **/
 @Data
 public class Result {

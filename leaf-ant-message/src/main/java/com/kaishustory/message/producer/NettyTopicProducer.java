@@ -34,9 +34,6 @@ import static com.kaishustory.message.common.constants.MessageConstants.GROUP_DE
 
 /**
  * Netty 按主题发送消息
- *
- * @author liguoyang
- * @create 2019-07-30 15:05
  **/
 @Slf4j
 public class NettyTopicProducer {

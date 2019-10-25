@@ -30,9 +30,6 @@ import static com.kaishustory.message.common.constants.MessageConstants.METHOD_A
 
 /**
  * Zookeeper操作
- *
- * @author liguoyang
- * @create 2019-07-30 14:14
  **/
 @Slf4j
 public class ZooOpera {

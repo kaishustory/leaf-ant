@@ -14,9 +14,6 @@ package com.kaishustory.message.common.constants;
 
 /**
  * 常量类
- *
- * @author liguoyang
- * @create 2019-08-28 16:25
  **/
 public class MessageConstants {
 

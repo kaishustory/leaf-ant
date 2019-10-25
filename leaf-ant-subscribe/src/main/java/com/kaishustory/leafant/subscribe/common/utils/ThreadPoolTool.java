@@ -18,9 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 线程池
- *
- * @author liguoyang
- * @create 2019-07-11 14:26
  **/
 public class ThreadPoolTool {
 

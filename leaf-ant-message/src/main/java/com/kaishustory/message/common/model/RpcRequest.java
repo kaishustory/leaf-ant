@@ -18,9 +18,6 @@ import java.util.UUID;
 
 /**
  * 请求参数
- *
- * @author liguoyang
- * @create 2019-07-29 11:20
  **/
 @Data
 public class RpcRequest {

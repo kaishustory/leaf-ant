@@ -21,9 +21,6 @@ import java.util.List;
 
 /**
  * 消息解码
- *
- * @author liguoyang
- * @create 2019-07-29 11:16
  **/
 public class RpcDecoder extends ByteToMessageDecoder {
 

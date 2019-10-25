@@ -17,9 +17,6 @@ import lombok.Data;
 
 /**
  * Redis子表副本查询信息
- *
- * @author liguoyang
- * @create 2019-08-23 15:27
  **/
 @Data
 public class ChildRedisQueryInfo {

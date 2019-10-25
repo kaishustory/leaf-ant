@@ -19,9 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 消息接收处理
- *
- * @author liguoyang
- * @create 2019-07-29 11:38
  **/
 @Slf4j
 public class ProducerHandler extends SimpleChannelInboundHandler<RpcResponse> {

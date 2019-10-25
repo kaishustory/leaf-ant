@@ -17,9 +17,6 @@ import com.kaishustory.message.common.model.RpcResponse;
 
 /**
  * 回调
- *
- * @author liguoyang
- * @create 2019-07-29 14:04
  **/
 public interface MessageHandler {
 

@@ -18,9 +18,6 @@ import java.sql.Types;
 
 /**
  * ElasticSearch字段同步映射配置
- *
- * @author liguoyang
- * @create 2019-07-22 14:12
  **/
 @Data
 public class EsSyncMappingField {

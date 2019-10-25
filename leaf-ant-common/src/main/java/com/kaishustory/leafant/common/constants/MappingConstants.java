@@ -14,9 +14,6 @@ package com.kaishustory.leafant.common.constants;
 
 /**
  * 映射常量
- *
- * @author liguoyang
- * @create 2019-07-26 11:04
  **/
 public class MappingConstants {
 

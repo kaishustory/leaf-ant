@@ -25,9 +25,6 @@ import javax.annotation.Resource;
 
 /**
  * Redis映射Dao
- *
- * @author liguoyang
- * @create 2019-08-02 13:49
  **/
 @Component
 public class RedisMappingDao {

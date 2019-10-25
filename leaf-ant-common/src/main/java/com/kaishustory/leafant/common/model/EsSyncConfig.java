@@ -23,9 +23,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.TYPE_ES;
 
 /**
  * ElasticSearch同步映射配置
- *
- * @author liguoyang
- * @create 2019-07-22 14:04
  **/
 @Data
 public class EsSyncConfig {

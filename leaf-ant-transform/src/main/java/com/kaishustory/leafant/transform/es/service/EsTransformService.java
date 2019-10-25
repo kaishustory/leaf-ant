@@ -41,9 +41,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.*;
 
 /**
  * ElasticSearch结构转换服务
- *
- * @author liguoyang
- * @create 2019-07-23 10:53
  **/
 @Slf4j
 @Service

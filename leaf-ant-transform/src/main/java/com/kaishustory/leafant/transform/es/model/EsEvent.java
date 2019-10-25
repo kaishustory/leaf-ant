@@ -28,9 +28,6 @@ import static com.kaishustory.leafant.common.constants.EventConstants.TYPE_DELET
 
 /**
  * ElasticSearch同步事件
- *
- * @author liguoyang
- * @create 2019-07-24 17:49
  **/
 @Data
 public class EsEvent {

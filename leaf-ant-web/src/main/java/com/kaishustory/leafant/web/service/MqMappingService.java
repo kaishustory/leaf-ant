@@ -35,9 +35,6 @@ import static com.kaishustory.message.common.model.RpcResponse.STATUS_SUCCESS;
 
 /**
  * MQ映射管理
- *
- * @author liguoyang
- * @create 2019-08-28 15:04
  **/
 @Service
 public class MqMappingService {

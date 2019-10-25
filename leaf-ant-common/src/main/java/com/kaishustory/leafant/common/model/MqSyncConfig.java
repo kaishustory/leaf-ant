@@ -20,9 +20,6 @@ import static com.kaishustory.leafant.common.constants.EventConstants.LOAD_STATU
 
 /**
  * MQ表同步映射配置
- *
- * @author liguoyang
- * @create 2019-08-06 14:53
  **/
 @Data
 public class MqSyncConfig {

@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * 页面控制
- *
- * @author liguoyang
- * @create 2019-08-01 10:17
  **/
 @Controller
 @RequestMapping("/page")

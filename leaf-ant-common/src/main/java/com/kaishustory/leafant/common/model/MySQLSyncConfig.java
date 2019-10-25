@@ -21,9 +21,6 @@ import static com.kaishustory.leafant.common.constants.EventConstants.LOAD_STATU
 
 /**
  * MySQL同步配置
- *
- * @author liguoyang
- * @create 2019-09-09 11:20
  **/
 @Data
 public class MySQLSyncConfig {

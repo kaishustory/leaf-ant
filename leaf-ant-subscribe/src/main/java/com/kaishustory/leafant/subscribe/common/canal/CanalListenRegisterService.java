@@ -22,9 +22,6 @@ import java.util.List;
 
 /**
  * Canal MySQL事件监听注册
- *
- * @author liguoyang
- * @create 2019-07-09 15:02
  **/
 @Service
 public class CanalListenRegisterService {

@@ -24,9 +24,6 @@ import static com.kaishustory.leafant.common.constants.EventConstants.TYPE_DELET
 
 /**
  * MySQL数据转换处理
- *
- * @author liguoyang
- * @create 2019-09-09 14:52
  **/
 @Service
 public class MySQLTransformService {

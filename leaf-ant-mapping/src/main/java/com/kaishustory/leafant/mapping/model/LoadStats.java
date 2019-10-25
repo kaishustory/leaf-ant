@@ -16,9 +16,6 @@ import lombok.Data;
 
 /**
  * 初始化加载状态
- *
- * @author liguoyang
- * @create 2019-09-11 13:51
  **/
 @Data
 public class LoadStats {

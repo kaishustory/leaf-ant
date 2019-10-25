@@ -27,9 +27,6 @@ import java.util.Map;
 
 /**
  * 数据库连接
- *
- * @author liguoyang
- * @create 2019-07-16 11:46
  **/
 @Component
 public class JdbcConf {

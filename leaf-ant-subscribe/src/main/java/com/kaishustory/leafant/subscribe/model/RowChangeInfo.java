@@ -17,9 +17,6 @@ import lombok.Data;
 
 /**
  * 数据变更信息
- *
- * @author liguoyang
- * @create 2018-05-06 下午5:42
  **/
 @Data
 public class RowChangeInfo {

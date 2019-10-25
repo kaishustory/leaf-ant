@@ -24,9 +24,6 @@ import static com.kaishustory.leafant.common.constants.EventConstants.TYPE_DELET
 
 /**
  * Redis事件
- *
- * @author liguoyang
- * @create 2019-08-20 16:57
  **/
 @Data
 public class RedisEvent {

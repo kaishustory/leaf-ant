@@ -22,9 +22,6 @@ import javax.annotation.Resource;
 
 /**
  * 用户Dao
- *
- * @author liguoyang
- * @create 2019-08-01 17:07
  **/
 @Component
 public class UserDao {

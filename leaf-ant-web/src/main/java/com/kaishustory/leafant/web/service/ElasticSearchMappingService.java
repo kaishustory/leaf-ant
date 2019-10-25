@@ -37,9 +37,6 @@ import static com.kaishustory.message.common.model.RpcResponse.STATUS_SUCCESS;
 
 /**
  * ElasticSearch映射Service
- *
- * @author liguoyang
- * @create 2019-08-02 13:57
  **/
 @Service
 public class ElasticSearchMappingService {

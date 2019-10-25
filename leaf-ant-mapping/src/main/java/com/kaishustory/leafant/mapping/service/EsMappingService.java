@@ -29,9 +29,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.TYPE_RED
 
 /**
  * ElasticSearch映射管理
- *
- * @author liguoyang
- * @create 2019-08-21 15:40
  **/
 @Service
 @ConditionalOnProperty(name = "message.mapping.producer", havingValue = "true")

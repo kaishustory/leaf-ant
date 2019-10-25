@@ -22,9 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * MQ映射Controller
- *
- * @author liguoyang
- * @create 2019-08-02 14:02
  **/
 @RestController
 @RequestMapping("/mqMapping")

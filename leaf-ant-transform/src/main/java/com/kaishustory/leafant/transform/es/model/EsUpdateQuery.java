@@ -22,9 +22,6 @@ import static com.kaishustory.leafant.transform.es.model.EsUpdate.genScript;
 
 /**
  * ElasticSearch更新结构
- *
- * @author liguoyang
- * @create 2019-07-26 16:56
  **/
 @Data
 public class EsUpdateQuery {

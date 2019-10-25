@@ -20,9 +20,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * 同步消息发送者
- *
- * @author liguoyang
- * @create 2019-07-30 20:18
  **/
 @Configuration
 @ConditionalOnProperty(name = "message.mapping.producer", havingValue = "true")

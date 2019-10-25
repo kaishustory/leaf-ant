@@ -36,9 +36,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 初始化MQ消息监听
- *
- * @author liguoyang
- * @create 2019-07-22 14:36
  **/
 @Configuration
 public class MQLoadListener {

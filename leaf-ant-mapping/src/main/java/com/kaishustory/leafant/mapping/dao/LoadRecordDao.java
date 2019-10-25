@@ -30,9 +30,6 @@ import static com.kaishustory.leafant.mapping.model.LoadRecord.*;
 
 /**
  * 初始化记录Dao
- *
- * @author liguoyang
- * @create 2019-09-11 10:50
  **/
 @Component
 public class LoadRecordDao {

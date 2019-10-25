@@ -31,9 +31,6 @@ import java.util.stream.Collectors;
 
 /**
  * MQ映射配置管理
- *
- * @author liguoyang
- * @create 2019-07-23 11:41
  **/
 @Component
 public class MqMappingDao {

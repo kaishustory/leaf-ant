@@ -19,9 +19,6 @@ import java.util.List;
 
 /**
  * 查询结果处理
- *
- * @author liguoyang
- * @create 2019-07-17 14:08
  **/
 public interface DataLoadHandle {
 

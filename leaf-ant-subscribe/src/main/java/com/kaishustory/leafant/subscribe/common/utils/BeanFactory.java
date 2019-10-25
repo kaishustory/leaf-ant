@@ -19,9 +19,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Spring BeanFactory
- *
- * @author liguoyang
- * @create 2018-05-06 下午6:00
  **/
 @Component
 public class BeanFactory implements ApplicationContextAware {

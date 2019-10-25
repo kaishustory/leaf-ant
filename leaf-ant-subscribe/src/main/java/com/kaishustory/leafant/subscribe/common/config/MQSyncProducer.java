@@ -23,9 +23,6 @@ import org.springframework.context.annotation.Primary;
 
 /**
  * 同步MQ生产者配置
- *
- * @author liguoyang
- * @create 2019-07-10 17:12
  **/
 @Configuration
 public class MQSyncProducer {

@@ -36,9 +36,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.*;
 
 /**
  * 事件路由
- *
- * @author liguoyang
- * @create 2019-07-23 10:57
  **/
 @Component
 public class EventRouteService {

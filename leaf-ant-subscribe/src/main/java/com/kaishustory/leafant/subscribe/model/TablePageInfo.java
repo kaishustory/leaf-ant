@@ -16,9 +16,6 @@ import lombok.Data;
 
 /**
  * 表分页信息
- *
- * @author liguoyang
- * @create 2019-09-03 13:53
  **/
 @Data
 public class TablePageInfo {

@@ -20,9 +20,6 @@ import org.springframework.context.annotation.ComponentScan;
 
 /**
  * 服务启动
- *
- * @author liguoyang
- * @create 2019-04-26 14:05
  **/
 @SpringBootApplication(exclude = {MongoDataAutoConfiguration.class, MongoAutoConfiguration.class})
 @ComponentScan(basePackages = {"com.kaishustory.leafant.mapping", "com.kaishustory.leafant.transform"})

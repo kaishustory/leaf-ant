@@ -18,9 +18,6 @@ import com.kaishustory.leafant.common.utils.Option;
 
 /**
  * 映射管理接口
- *
- * @author liguoyang
- * @create 2019-09-10 18:11
  **/
 public interface IMappingService {
 

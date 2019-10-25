@@ -17,6 +17,7 @@ package com.kaishustory.leafant.common.utils;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Base64;
@@ -27,7 +28,6 @@ import java.util.Base64;
  * ClassName: AESCrypt <br/>
  * Date: 2017年5月3日 下午2:48:42 <br/>
  *
- * @author chababa
  * @see
  * @since JDK 1.7
  */
@@ -44,7 +44,7 @@ public class AESCrypt {
     public AESCrypt(String password) throws Exception {
         // hash password with SHA-256 and crop the output to 128-bit for key
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        digest.update(password.getBytes("UTF-8"));
+        digest.update(password.getBytes(StandardCharsets.UTF_8));
         byte[] keyBytes = new byte[32];
         System.arraycopy(digest.digest(), 0, keyBytes, 0, keyBytes.length);
         cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -61,8 +61,8 @@ public class AESCrypt {
 
     public String encrypt(String plainText) throws Exception {
         cipher.init(Cipher.ENCRYPT_MODE, key, spec);
-        byte[] encrypted = cipher.doFinal(plainText.getBytes("UTF-8"));
-        String encryptedText = new String(Base64.getEncoder().encode(encrypted), "UTF-8");
+        byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+        String encryptedText = new String(Base64.getEncoder().encode(encrypted), StandardCharsets.UTF_8);
         return encryptedText;
     }
 
@@ -70,7 +70,7 @@ public class AESCrypt {
         cipher.init(Cipher.DECRYPT_MODE, key, spec);
         byte[] bytes = Base64.getDecoder().decode(cryptedText);
         byte[] decrypted = cipher.doFinal(bytes);
-        String decryptedText = new String(decrypted, "UTF-8");
+        String decryptedText = new String(decrypted, StandardCharsets.UTF_8);
         return decryptedText;
     }
 

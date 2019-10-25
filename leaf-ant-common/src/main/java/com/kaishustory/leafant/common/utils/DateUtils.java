@@ -21,8 +21,6 @@ import java.util.List;
 
 /**
  * 日期工具类
- *
- * @author liguoyang
  */
 public class DateUtils {
 

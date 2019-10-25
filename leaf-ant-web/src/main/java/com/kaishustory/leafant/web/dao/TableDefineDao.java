@@ -31,9 +31,6 @@ import java.util.stream.Collectors;
 
 /**
  * 表定义Dao
- *
- * @author liguoyang
- * @create 2019-08-07 16:55
  **/
 @Component
 public class TableDefineDao {

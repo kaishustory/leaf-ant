@@ -25,9 +25,6 @@ import java.util.List;
 
 /**
  * 数据源管理Service
- *
- * @author liguoyang
- * @create 2019-08-13 16:53
  **/
 @Service
 public class DatasourceService {

@@ -18,9 +18,6 @@ import java.util.Objects;
 
 /**
  * Zookeeper节点注册
- *
- * @author liguoyang
- * @create 2019-08-08 12:05
  **/
 @Data
 public class ZooRegisterMethod {

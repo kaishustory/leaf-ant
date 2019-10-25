@@ -26,9 +26,6 @@ import java.util.stream.Collectors;
 
 /**
  * ElasticSearch配置
- *
- * @author liguoyang
- * @create 2019-07-25 13:36
  **/
 @Component
 public class ElasticSearchConf {

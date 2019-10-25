@@ -21,9 +21,6 @@ import java.util.List;
 
 /**
  * ElasticSearch表同步映射配置
- *
- * @author liguoyang
- * @create 2019-07-22 14:17
  **/
 @Data
 public class EsSyncMappingTable {

@@ -26,9 +26,6 @@ import java.util.Map;
 
 /**
  * Json转换工具
- *
- * @author liguoyang
- * @create 2019-03-08 11:35 AM
  **/
 public class JsonUtils {
 
@@ -145,7 +142,7 @@ public class JsonUtils {
                 }
             });
 
-            return (T) obj;
+            return obj;
         } catch (Exception e) {
             Log.error("Map to Object 发生异常!", e);
             return null;
@@ -156,7 +153,7 @@ public class JsonUtils {
      * 对象 转 Map
      *
      * @param obj Any? 对象
-     * @return Map<String   ,       Any   ?> Map
+     * @return Map<String, Any ?> Map
      */
     public static Map objectToMap(Object obj) {
         try {

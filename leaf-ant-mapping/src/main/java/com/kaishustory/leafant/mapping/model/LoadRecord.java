@@ -19,9 +19,6 @@ import java.util.List;
 
 /**
  * 初始化记录
- *
- * @author liguoyang
- * @create 2019-09-10 19:18
  **/
 @Data
 public class LoadRecord {

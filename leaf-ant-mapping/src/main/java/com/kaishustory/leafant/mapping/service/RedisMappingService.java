@@ -27,9 +27,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.TYPE_RED
 
 /**
  * Redis映射管理
- *
- * @author liguoyang
- * @create 2019-08-21 15:29
  **/
 @Service
 @ConditionalOnProperty(name = "message.mapping.producer", havingValue = "true")

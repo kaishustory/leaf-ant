@@ -19,9 +19,6 @@ import java.util.LinkedHashMap;
 
 /**
  * ElasticSearch索引映射
- *
- * @author liguoyang
- * @create 2019-08-07 10:59
  **/
 @Data
 public class EsMapping {

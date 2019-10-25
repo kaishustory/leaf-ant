@@ -34,9 +34,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.SOURCE_C
 
 /**
  * Canal订阅消息处理
- *
- * @author liguoyang
- * @create 2019-07-09 17:49
  **/
 @Slf4j
 public class CanalMessageHandle implements ICanalMessageHandle {

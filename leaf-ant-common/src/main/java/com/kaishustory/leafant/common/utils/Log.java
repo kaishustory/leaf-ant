@@ -17,9 +17,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 日志工具
- *
- * @author liguoyang
- * @create 2018-07-31 下午1:16
  **/
 public class Log {
 

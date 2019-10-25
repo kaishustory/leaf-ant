@@ -16,9 +16,6 @@ import lombok.Data;
 
 /**
  * 初始化加载信息
- *
- * @author liguoyang
- * @create 2019-08-21 11:03
  **/
 @Data
 public class InitLoadInfo {

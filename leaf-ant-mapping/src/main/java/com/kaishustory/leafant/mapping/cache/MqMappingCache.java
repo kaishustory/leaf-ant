@@ -32,9 +32,6 @@ import java.util.stream.Collectors;
 
 /**
  * MQ映射缓存
- *
- * @author liguoyang
- * @create 2019-08-06 14:09
  **/
 @Component
 public class MqMappingCache {

@@ -34,9 +34,6 @@ import java.util.Objects;
 
 /**
  * 同步MQ消息监听
- *
- * @author liguoyang
- * @create 2019-07-22 14:36
  **/
 @Configuration
 public class MQSyncListener {

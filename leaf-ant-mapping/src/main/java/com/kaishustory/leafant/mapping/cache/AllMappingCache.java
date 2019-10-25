@@ -17,9 +17,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * 映射配置Cache
- *
- * @author liguoyang
- * @create 2019-08-06 14:45
  **/
 @Component
 public class AllMappingCache {
@@ -54,9 +51,6 @@ public class AllMappingCache {
         if (redisMappingCache.getMapping(rds, database, table).exist()) {
             return true;
         }
-        if (mySQLMappingCache.getMapping(rds, database, table).exist()) {
-            return true;
-        }
-        return false;
+        return mySQLMappingCache.getMapping(rds, database, table).exist();
     }
 }

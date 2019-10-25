@@ -16,9 +16,6 @@ import lombok.Data;
 
 /**
  * 回复参数
- *
- * @author liguoyang
- * @create 2019-07-29 11:27
  **/
 @Data
 public class RpcResponse {

@@ -35,9 +35,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.*;
 
 /**
  * 数据全量加载，事件监听
- *
- * @author liguoyang
- * @create 2019-07-17 19:25
  **/
 @Slf4j
 @Service

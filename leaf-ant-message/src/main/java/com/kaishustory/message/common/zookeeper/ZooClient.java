@@ -19,9 +19,6 @@ import org.apache.curator.retry.RetryNTimes;
 
 /**
  * Zookeeper连接
- *
- * @author liguoyang
- * @create 2019-07-30 14:06
  **/
 @Slf4j
 public class ZooClient {

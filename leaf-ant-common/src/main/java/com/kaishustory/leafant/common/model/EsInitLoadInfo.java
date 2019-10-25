@@ -18,9 +18,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.TYPE_ES;
 
 /**
  * ElasticSearch 初始化信息
- *
- * @author liguoyang
- * @create 2019-08-31 11:24
  **/
 @Data
 public class EsInitLoadInfo extends InitLoadInfo {

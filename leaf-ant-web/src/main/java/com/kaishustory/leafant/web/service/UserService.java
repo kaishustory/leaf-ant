@@ -21,9 +21,6 @@ import javax.annotation.PostConstruct;
 
 /**
  * 用户管理
- *
- * @author liguoyang
- * @create 2019-08-01 17:14
  **/
 @Service
 public class UserService {

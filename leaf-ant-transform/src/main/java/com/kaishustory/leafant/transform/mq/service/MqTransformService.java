@@ -32,9 +32,6 @@ import static com.kaishustory.leafant.common.constants.EventConstants.*;
 
 /**
  * MQ转发处理
- *
- * @author liguoyang
- * @create 2019-08-28 13:51
  **/
 @Service
 public class MqTransformService {

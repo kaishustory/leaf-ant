@@ -23,9 +23,6 @@ import javax.annotation.Resource;
 
 /**
  * 同步配置
- *
- * @author liguoyang
- * @create 2019-08-06 15:22
  **/
 @Slf4j
 @Component

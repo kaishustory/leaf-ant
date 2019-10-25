@@ -22,9 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 回调服务
- *
- * @author liguoyang
- * @create 2019-07-29 14:06
  **/
 @Slf4j
 public class CallbackServer {

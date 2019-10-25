@@ -16,9 +16,6 @@ import lombok.Data;
 
 /**
  * 事件列
- *
- * @author liguoyang
- * @create 2019-07-11 16:32
  **/
 @Data
 public class EventColumn {

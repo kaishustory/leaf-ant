@@ -21,9 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 消息处理
- *
- * @author liguoyang
- * @create 2019-07-29 11:14
  **/
 @Slf4j
 public class ConsumerHandler extends ChannelInboundHandlerAdapter {

@@ -16,9 +16,6 @@ import lombok.Data;
 
 /**
  * 同步状态
- *
- * @author liguoyang
- * @create 2019-08-18 15:39
  **/
 @Data
 public class SyncStatus {

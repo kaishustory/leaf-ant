@@ -35,9 +35,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.*;
 
 /**
  * 映射管理监听
- *
- * @author liguoyang
- * @create 2019-09-10 18:17
  **/
 @Component
 public class MappingManagerListener {

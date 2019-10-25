@@ -29,9 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Redis查询服务
- *
- * @author liguoyang
- * @create 2019-08-20 18:54
  **/
 @Service
 public class RedisQueryService {

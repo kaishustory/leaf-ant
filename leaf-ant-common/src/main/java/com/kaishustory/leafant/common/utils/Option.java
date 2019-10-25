@@ -17,9 +17,6 @@ import java.util.Optional;
 
 /**
  * Service层返回类型
- *
- * @author liguoyang
- * @create 2018-08-01 下午4:43
  **/
 public class Option<T> implements Serializable {
 

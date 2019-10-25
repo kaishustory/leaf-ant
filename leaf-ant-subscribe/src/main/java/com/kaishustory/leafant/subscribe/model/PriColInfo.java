@@ -16,9 +16,6 @@ import lombok.Data;
 
 /**
  * 主键字段信息
- *
- * @author liguoyang
- * @create 2019-09-11 17:07
  **/
 @Data
 public class PriColInfo {

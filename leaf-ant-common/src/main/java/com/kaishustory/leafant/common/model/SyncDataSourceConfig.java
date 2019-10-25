@@ -18,9 +18,6 @@ import java.util.Objects;
 
 /**
  * 数据源配置
- *
- * @author liguoyang
- * @create 2019-08-06 18:29
  **/
 @Data
 public class SyncDataSourceConfig {

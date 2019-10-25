@@ -26,9 +26,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.SOURCE_C
 
 /**
  * 数据修改事件
- *
- * @author liguoyang
- * @create 2019-07-10 15:09
  **/
 @Data
 public class Event {

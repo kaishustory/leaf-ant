@@ -14,9 +14,6 @@ package com.kaishustory.leafant.common.constants;
 
 /**
  * 事件常量
- *
- * @author liguoyang
- * @create 2019-07-26 11:04
  **/
 public class EventConstants {
 

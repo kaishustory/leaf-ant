@@ -24,9 +24,6 @@ import java.util.List;
 
 /**
  * 数据源管理Dao
- *
- * @author liguoyang
- * @create 2019-08-13 16:41
  **/
 @Component
 public class DatasourceDao {

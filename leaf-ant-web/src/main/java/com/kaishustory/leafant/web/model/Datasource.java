@@ -18,9 +18,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * 数据源
- *
- * @author liguoyang
- * @create 2019-08-13 16:46
  **/
 @Data
 @Document(collection = "datasource")

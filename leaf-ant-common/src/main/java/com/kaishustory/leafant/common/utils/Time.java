@@ -18,8 +18,6 @@ import java.text.DecimalFormat;
 
 /**
  * 计时器
- *
- * @author liguoyang
  */
 public class Time {
 

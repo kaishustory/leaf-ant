@@ -19,9 +19,6 @@ import io.netty.handler.codec.MessageToByteEncoder;
 
 /**
  * 消息编码
- *
- * @author liguoyang
- * @create 2019-07-29 11:19
  **/
 public class RpcEncoder extends MessageToByteEncoder {
 

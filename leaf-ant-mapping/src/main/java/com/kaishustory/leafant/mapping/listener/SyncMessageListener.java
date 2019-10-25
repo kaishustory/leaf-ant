@@ -28,9 +28,6 @@ import static com.kaishustory.leafant.common.constants.MappingConstants.*;
 
 /**
  * 同步映射消息
- *
- * @author liguoyang
- * @create 2019-07-30 19:53
  **/
 @Configuration
 public class SyncMessageListener {

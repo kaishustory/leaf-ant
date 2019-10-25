@@ -17,9 +17,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * 用户
- *
- * @author liguoyang
- * @create 2019-08-01 17:09
  **/
 @Document(collection = "user")
 public class User {

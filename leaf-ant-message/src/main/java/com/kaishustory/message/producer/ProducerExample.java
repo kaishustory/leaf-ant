@@ -21,9 +21,6 @@ import java.net.ConnectException;
 
 /**
  * 客户端启动
- *
- * @author liguoyang
- * @create 2019-07-29 11:39
  **/
 @Slf4j
 public class ProducerExample {

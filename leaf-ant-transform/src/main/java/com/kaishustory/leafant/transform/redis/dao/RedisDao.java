@@ -26,9 +26,6 @@ import java.util.List;
 
 /**
  * Redis操作
- *
- * @author liguoyang
- * @create 2019-08-20 17:28
  **/
 @Component
 public class RedisDao {

@@ -44,9 +44,6 @@ import static com.kaishustory.leafant.mapping.model.LoadRecord.*;
 
 /**
  * 数据初始化加载Dao
- *
- * @author liguoyang
- * @create 2019-07-18 11:23
  **/
 @Component
 public class DataLoadDao {

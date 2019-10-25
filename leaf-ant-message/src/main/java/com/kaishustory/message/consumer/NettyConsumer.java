@@ -32,9 +32,6 @@ import static com.kaishustory.message.common.constants.MessageConstants.GROUP_DE
 
 /**
  * 服务端
- *
- * @author liguoyang
- * @create 2019-07-29 11:07
  **/
 @Slf4j
 public class NettyConsumer {

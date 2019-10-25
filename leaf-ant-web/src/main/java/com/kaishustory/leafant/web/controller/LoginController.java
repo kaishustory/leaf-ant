@@ -25,9 +25,6 @@ import java.util.Base64;
 
 /**
  * 用户登录
- *
- * @author liguoyang
- * @create 2019-08-01 14:43
  **/
 @Slf4j
 @RestController

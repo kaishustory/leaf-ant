@@ -33,9 +33,6 @@ import java.util.stream.Collectors;
 
 /**
  * ElasticSearch映射Controller
- *
- * @author liguoyang
- * @create 2019-08-02 14:02
  **/
 @RestController
 @RequestMapping("/elasticsearchMapping")

@@ -20,9 +20,6 @@ import java.util.List;
 
 /**
  * 分页返回结果
- *
- * @author liguoyang
- * @create 2019-01-14 3:00 PM
  **/
 @Data
 public class Page<T> implements Serializable {

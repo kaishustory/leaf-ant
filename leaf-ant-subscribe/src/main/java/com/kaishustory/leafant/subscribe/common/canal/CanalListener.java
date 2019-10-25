@@ -31,9 +31,6 @@ import static java.lang.String.format;
 
 /**
  * Canal MySQL事件监听
- *
- * @author liguoyang
- * @create 2019-07-09 15:34
  **/
 @Slf4j
 public class CanalListener implements Runnable {

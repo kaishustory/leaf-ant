@@ -19,9 +19,6 @@ import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 
 /**
  * 启动类
- *
- * @author liguoyang
- * @create 2019-08-01 10:13
  **/
 @SpringBootApplication(exclude = {MongoDataAutoConfiguration.class, MongoAutoConfiguration.class})
 public class Application {

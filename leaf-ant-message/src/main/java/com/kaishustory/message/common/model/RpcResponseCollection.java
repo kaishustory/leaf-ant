@@ -19,9 +19,6 @@ import java.util.List;
 
 /**
  * 请求响应集合
- *
- * @author liguoyang
- * @create 2019-08-24 11:41
  **/
 @Data
 public class RpcResponseCollection {

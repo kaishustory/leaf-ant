@@ -18,9 +18,6 @@ import java.util.List;
 
 /**
  * ElasticSearch映射Vo
- *
- * @author liguoyang
- * @create 2019-08-02 13:59
  **/
 @Data
 public class ElasticSearchMappingVo {

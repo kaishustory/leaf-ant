@@ -26,9 +26,6 @@ import javax.annotation.Resource;
 
 /**
  * ElasticSearch映射Dao
- *
- * @author liguoyang
- * @create 2019-08-02 13:49
  **/
 @Component
 public class ElasticSearchMappingDao {
@@ -36,7 +33,7 @@ public class ElasticSearchMappingDao {
     /**
      * 集合
      */
-    private final String collection = "elasticsearch_mapping";
+    private static final String collection = "elasticsearch_mapping";
     @Resource(name = "mongoTemplate")
     private MongoTemplate mongoTemplate;
     /**

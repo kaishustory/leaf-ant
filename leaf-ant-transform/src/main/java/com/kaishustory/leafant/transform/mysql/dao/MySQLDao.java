@@ -31,9 +31,6 @@ import java.util.Optional;
 
 /**
  * 数据库操作
- *
- * @author liguoyang
- * @create 2019-09-10 11:10
  **/
 @Component
 public class MySQLDao {

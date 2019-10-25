@@ -19,9 +19,6 @@ import java.util.Set;
 
 /**
  * 自动寻找端口
- *
- * @author liguoyang
- * @create 2019-08-07 19:00
  **/
 public class AutoPort {
 

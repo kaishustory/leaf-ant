@@ -22,9 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * 登录授权拦截
- *
- * @author liguoyang
- * @create 2019-08-01 14:35
  **/
 @Slf4j
 @Component
@@ -62,7 +59,7 @@ public class AuthFilter implements Filter {
 //                || request.getRequestURI().startsWith("/redisMapping")
 //                || request.getRequestURI().startsWith("/mqMapping")
 //                || request.getRequestURI().startsWith("/mysqlMapping")
-                    ) {
+            ) {
                 // 允许访问
                 filterChain.doFilter(request, response);
                 return;

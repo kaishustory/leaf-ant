@@ -37,9 +37,6 @@ import java.util.stream.Collectors;
 
 /**
  * ES查询服务
- *
- * @author liguoyang
- * @create 2019-08-20 18:54
  **/
 @Service
 public class EsQueryService {
@@ -156,18 +153,14 @@ public class EsQueryService {
         // 过滤未缓存记录
         List<ChildQueryInfo> noCacheQueryList = childQueryInfoList.stream().filter(query -> {
             Map<String, String> values = cacheList.get(query.getEsQueryId());
+            // 缓存、ES均不存在，直接返回为空
+            // 缓存不存在，不确定ES是否存在
             if (values != null) {
                 // 直接缓存查询到，返回
                 keyValues.put(query.getEsQueryId(), values);
                 return false;
 
-            } else if (isEmptys.getOrDefault(query.getEsQueryId(), false)) {
-                // 缓存、ES均不存在，直接返回为空
-                return false;
-            } else {
-                // 缓存不存在，不确定ES是否存在
-                return true;
-            }
+            } else return !isEmptys.getOrDefault(query.getEsQueryId(), false);
         }).collect(Collectors.toList());
 
         if (keyValues.keySet().size() > 0) {

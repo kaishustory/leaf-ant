@@ -23,8 +23,6 @@ import java.util.List;
 
 /**
  * 字符串工具类
- *
- * @author liguoyang
  */
 public class StringUtils {
 
@@ -184,9 +182,9 @@ public class StringUtils {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(sourceStr.getBytes());
-            byte b[] = md.digest();
+            byte[] b = md.digest();
             int i;
-            StringBuffer buf = new StringBuffer("");
+            StringBuffer buf = new StringBuffer();
             for (int offset = 0; offset < b.length; offset++) {
                 i = b[offset];
                 if (i < 0)

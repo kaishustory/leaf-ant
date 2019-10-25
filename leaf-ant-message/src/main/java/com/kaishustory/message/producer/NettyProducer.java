@@ -27,9 +27,6 @@ import java.net.ConnectException;
 
 /**
  * 消息接收客户端
- *
- * @author liguoyang
- * @create 2019-07-29 11:36
  **/
 @Slf4j
 public class NettyProducer {

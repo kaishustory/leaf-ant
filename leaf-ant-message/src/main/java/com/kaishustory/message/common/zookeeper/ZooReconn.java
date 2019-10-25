@@ -23,9 +23,6 @@ import static com.kaishustory.message.common.constants.MessageConstants.METHOD_A
 
 /**
  * Zookeeper 重连处理
- *
- * @author liguoyang
- * @create 2019-08-08 12:03
  **/
 @Slf4j
 public class ZooReconn {
@@ -34,7 +31,6 @@ public class ZooReconn {
      * 注册方法列表
      */
     private static Set<ZooRegisterMethod> methods = Sets.newConcurrentHashSet();
-    ;
 
     /**
      * 重连处理
