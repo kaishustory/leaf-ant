@@ -27,10 +27,9 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Spring Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
         <!-- Spring MongoDB -->

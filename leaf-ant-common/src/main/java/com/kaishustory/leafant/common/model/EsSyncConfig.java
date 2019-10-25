@@ -114,10 +114,8 @@ public class EsSyncConfig {
      */
     private List<EsSyncMappingTable> getTableList(List<EsSyncMappingTable> tableList, EsSyncMappingTable table) {
         tableList.add(table);
-        if (table.getChildTable() != null && table.getChildTable().size() > 0) {
-            table.getChildTable().forEach(child -> {
-                getTableList(tableList, child);
-            });
+        if (table.getChildTable() != null && !table.getChildTable().isEmpty()) {
+            table.getChildTable().forEach(child -> getTableList(tableList, child));
         }
         return tableList;
     }
