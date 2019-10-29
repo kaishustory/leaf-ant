@@ -12,6 +12,7 @@
 
 package com.kaishustory.leafant.common.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.sql.Types;
@@ -125,10 +126,12 @@ public class EsSyncMappingField {
     /**
      * 关联主表ES字段名称【子表字段】
      */
+    @JsonIgnore
     public String getJoinMasterEsFieldName() {
         return joinMasterEsField.split("\\.")[1];
     }
 
+    @JsonIgnore
     public String getEsTypeName() {
         if (esTypeName == null) {
             esTypeName = getEsType(type, analyzer);
@@ -143,6 +146,7 @@ public class EsSyncMappingField {
      * @param analyzer 是否分词
      * @return Es类型
      */
+    @JsonIgnore
     private String getEsType(int type, boolean analyzer) {
         switch (type) {
             case Types.INTEGER:

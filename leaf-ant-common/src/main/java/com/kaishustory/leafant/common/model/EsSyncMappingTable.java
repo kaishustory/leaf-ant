@@ -12,6 +12,7 @@
 
 package com.kaishustory.leafant.common.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -90,6 +91,7 @@ public class EsSyncMappingTable {
      *
      * @return 缓存KEY
      */
+    @JsonIgnore
     public String getTableKey() {
         return String.format("%s:%s:%s", sourceRds, sourceDatabase, sourceTable);
     }
@@ -100,6 +102,7 @@ public class EsSyncMappingTable {
      * @param id 主键值
      * @return Redis key
      */
+    @JsonIgnore
     public String getRedisKey(String id) {
         return redisKeyPrefix + ":" + id;
     }
@@ -111,6 +114,7 @@ public class EsSyncMappingTable {
      * /  |  \   子表
      * /   |   \  子表 && 叶子子表
      */
+    @JsonIgnore
     public boolean isMaster() {
         if (config_ == null) {
             return isMaster;
@@ -126,6 +130,7 @@ public class EsSyncMappingTable {
      * /  |  \   子表
      * /   |   \  子表 && 叶子子表
      */
+    @JsonIgnore
     public boolean isChild() {
         if (config_ == null) {
             return !isMaster;
@@ -141,6 +146,7 @@ public class EsSyncMappingTable {
      * /  |  \   子表
      * /   |   \  子表 && 叶子子表
      */
+    @JsonIgnore
     public boolean isLeafChild() {
         if (config_ == null) {
             return (childTable == null || childTable.size() == 0);
@@ -154,6 +160,7 @@ public class EsSyncMappingTable {
      *
      * @return
      */
+    @JsonIgnore
     public boolean isCopyChild() {
         return this.getIndex().startsWith("child:");
     }
@@ -167,26 +174,32 @@ public class EsSyncMappingTable {
         this.config_ = syncConfig;
     }
 
+    @JsonIgnore
     public String getConfigId() {
         return this.config_.getId();
     }
 
+    @JsonIgnore
     public boolean isMult() {
         return this.config_.isMult();
     }
 
+    @JsonIgnore
     public String getIndex() {
         return this.config_.getIndex();
     }
 
+    @JsonIgnore
     public String getType() {
         return this.config_.getType();
     }
 
+    @JsonIgnore
     public String getEsAddr() {
         return this.config_.getEsAddr();
     }
 
+    @JsonIgnore
     public EsSyncConfig getConfig() {
         return this.config_;
     }
