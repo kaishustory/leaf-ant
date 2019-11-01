@@ -16,7 +16,6 @@ import com.kaishustory.leafant.common.model.EsSyncMappingField;
 import com.kaishustory.leafant.common.model.EsSyncMappingTable;
 import com.kaishustory.leafant.common.model.Event;
 import com.kaishustory.leafant.common.model.EventColumn;
-import com.kaishustory.leafant.common.utils.StringUtils;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -118,15 +117,11 @@ public class EsEvent {
     private Object convertEsValue(Object value) {
         if (value != null) {
             if (value instanceof String) {
-                if (StringUtils.isNotNull(value.toString())) {
-                    // ES 限制字符串最大长度
-                    if (((String) value).getBytes().length >= 32766) {
-                        return value.toString().substring(0, 32766 / 4);
-                    } else {
-                        return value;
-                    }
+                // ES 限制字符串最大长度
+                if (((String) value).getBytes().length >= 32766) {
+                    return value.toString().substring(0, 32766 / 4);
                 } else {
-                    return null;
+                    return value;
                 }
             } else {
                 return value;

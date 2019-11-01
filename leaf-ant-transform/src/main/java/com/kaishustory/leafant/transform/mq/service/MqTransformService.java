@@ -14,17 +14,23 @@ package com.kaishustory.leafant.transform.mq.service;
 
 import com.kaishustory.leafant.common.model.Event;
 import com.kaishustory.leafant.common.model.MqSyncConfig;
+import com.kaishustory.leafant.common.utils.DateUtils;
 import com.kaishustory.leafant.common.utils.JsonUtils;
 import com.kaishustory.leafant.common.utils.Log;
+import com.kaishustory.leafant.transform.mq.listener.MqTimeoutListener;
+import com.kaishustory.leafant.transform.mq.model.MqEvent;
 import lombok.SneakyThrows;
 import org.apache.rocketmq.client.producer.MQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,6 +60,9 @@ public class MqTransformService {
     @Value("${spring.profiles.active}")
     private String env;
 
+    @Autowired
+    private MqTimeoutListener timeoutListener;
+
     /**
      * MQ事件转发处理
      *
@@ -65,34 +74,45 @@ public class MqTransformService {
         if (events != null && events.size() > 0) {
 
             Event e = events.get(0);
-            // 立即处理
-            Message msg = new Message(config.getTargetTopic(), String.format("%s:%s", e.getDatabase(), e.getTable()), e.getTableKey(), JsonUtils.toJson(events).getBytes());
-            producer.send(msg,
-                    // Hash分片值【实例_数据库_表名】
-                    (mqs, msg1, key) -> mqs.get(Math.abs(Objects.hash(key)) % mqs.size()),
-                    e.getTableKey(),
-                    new SendCallback() {
-                        @Override
-                        public void onSuccess(SendResult sendResult) {
-                            Log.info("【MQ】事件转发成功 topic：{}，table：{}，MQID：{}", config.getTargetTopic(), e.getTableKey(), msg.getTransactionId());
-                        }
+            if (config.getTimeout() == null || config.getTimeout() <= 0) {
+                // 立即处理
+                Message msg = new Message(config.getTargetTopic(), String.format("%s:%s", e.getDatabase(), e.getTable()), e.getTableKey(), JsonUtils.toJson(events).getBytes());
+                producer.send(msg,
+                        // Hash分片值【实例_数据库_表名】
+                        (mqs, msg1, key) -> mqs.get(Math.abs(Objects.hash(key)) % mqs.size()),
+                        e.getTableKey(),
+                        new SendCallback() {
+                            @Override
+                            public void onSuccess(SendResult sendResult) {
+                                Log.info("【MQ】事件转发成功 topic：{}，table：{}，MQID：{}", config.getTargetTopic(), e.getTableKey(), msg.getTransactionId());
+                            }
 
-                        @Override
-                        public void onException(Throwable context) {
-                            Log.error("【MQ】事件转发失败 topic：{}，table：{}，MQID：{}", config.getTargetTopic(), e.getTableKey(), msg.getTransactionId());
+                            @Override
+                            public void onException(Throwable context) {
+                                Log.error("【MQ】事件转发失败 topic：{}，table：{}，MQID：{}", config.getTargetTopic(), e.getTableKey(), msg.getTransactionId());
+                            }
                         }
+                );
+                // 逐条打印日志
+                events.forEach(event -> {
+                    if (TYPE_INSERT == event.getType()) {
+                        Log.info("【MQ】新增文档 {}, id：{}，delay：{}，insert：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms", JsonUtils.toJson(event.getUpdateColumnsBase()));
+                    } else if (TYPE_UPDATE == event.getType()) {
+                        Log.info("【MQ】更新文档 {}, id：{}，delay：{}，update：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms", JsonUtils.toJson(event.getUpdateColumnsBase()));
+                    } else if (TYPE_DELETE == event.getType()) {
+                        Log.info("【MQ】删除文档 {}, id：{}，delay：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms");
                     }
-            );
-            // 逐条打印日志
-            events.forEach(event -> {
-                if (TYPE_INSERT == event.getType()) {
-                    Log.info("【MQ】新增文档 {}, id：{}，delay：{}，insert：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms", JsonUtils.toJson(event.getUpdateColumnsBase()));
-                } else if (TYPE_UPDATE == event.getType()) {
-                    Log.info("【MQ】更新文档 {}, id：{}，delay：{}，update：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms", JsonUtils.toJson(event.getUpdateColumnsBase()));
-                } else if (TYPE_DELETE == event.getType()) {
-                    Log.info("【MQ】删除文档 {}, id：{}，delay：{}", event.getTableKey(), event.getPrimaryKey(), (System.currentTimeMillis() - event.getExecuteTime()) + "/ms");
-                }
-            });
+                });
+            } else {
+                // 延迟处理
+                // 写入延迟队列
+                timeoutListener.addQueue(new MqEvent(
+                        DateUtils.addTime(new Date(), Calendar.SECOND, config.getTimeout()).getTime(),
+                        config,
+                        events
+                ));
+                Log.info("【MQ】创建事件延时处理任务 topic：{}，table：{}", config.getTargetTopic(), e.getTableKey());
+            }
 
         }
 

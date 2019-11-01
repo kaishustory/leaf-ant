@@ -65,6 +65,11 @@ public class MqSyncConfig {
     private boolean sync = false;
 
     /**
+     * 延时时间（单位：秒）
+     */
+    private Integer timeout = 0;
+
+    /**
      * 初始化状态：no：未初始化，initing：初始化中，complete：完成，fail：失败，no-support：不支持初始化
      */
     private String init = LOAD_STATUS_NO;

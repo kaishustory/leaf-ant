@@ -160,7 +160,13 @@ public class EsQueryService {
                 keyValues.put(query.getEsQueryId(), values);
                 return false;
 
-            } else return !isEmptys.getOrDefault(query.getEsQueryId(), false);
+            } else if (isEmptys.getOrDefault(query.getEsQueryId(), false)) {
+                // 缓存、ES均不存在，直接返回为空
+                return false;
+            } else {
+                // 缓存不存在，不确定ES是否存在
+                return true;
+            }
         }).collect(Collectors.toList());
 
         if (keyValues.keySet().size() > 0) {

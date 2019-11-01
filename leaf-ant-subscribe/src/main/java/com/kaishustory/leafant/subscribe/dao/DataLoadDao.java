@@ -325,6 +325,7 @@ public class DataLoadDao {
                         i + 1,
                         pageSize
                 );
+                Log.info("创建初始化任务。table：{}，page：{}", initLoadInfo.getDataSourceConfig().getTable(), i + 1);
             }
 
             // 只有等待处理和处理失败的任务，会被加入处理队列

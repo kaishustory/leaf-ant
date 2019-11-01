@@ -94,7 +94,6 @@ public class MqSendService {
                         firstEvent.getTableKey(),
                         JsonUtils.toJson(eventList).getBytes() // Body 事件JSON
                 );
-
                 // 发送消息
                 getProducer(simple.getSource()).sendOneway(msg,
                         // Hash分片值【实例_数据库_表名】
